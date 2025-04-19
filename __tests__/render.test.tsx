@@ -11,6 +11,11 @@ import {
   ListItem,
   CodeBlock,
   Image,
+  Emphasis,
+  InlineCode,
+  Quote,
+  HorizontalRule,
+  Text,
 } from "../src";
 
 describe("Markdown Renderer", () => {
@@ -74,6 +79,200 @@ describe("Markdown Renderer", () => {
 
       - **Bold item** with text
       - Item with [a link](https://example.com)
+      "
+    `);
+  });
+
+  it("handles top-level text nodes", () => {
+    const markdown = render(
+      <Document>
+        This is a top-level text node with <Strong>bold text</Strong>
+      </Document>
+    );
+
+    expect(markdown).toMatchInlineSnapshot(`
+      "This is a top-level text node with **bold text**
+      "
+    `);
+  });
+
+  it("renders nested paragraphs correctly", () => {
+    const markdown = render(
+      <Document>
+        <Paragraph>
+          <Paragraph>This is a nested paragraph.</Paragraph>
+          This is in the outer paragraph.
+        </Paragraph>
+      </Document>
+    );
+
+    expect(markdown).toMatchInlineSnapshot(`
+      "This is in the outer paragraph.
+      "
+    `);
+  });
+
+  it("handles empty elements", () => {
+    const markdown = render(
+      <Document>
+        <Header level={1}></Header>
+        <Paragraph></Paragraph>
+        <List></List>
+      </Document>
+    );
+
+    expect(markdown).toMatchInlineSnapshot(`
+      "#
+
+
+
+      "
+    `);
+  });
+
+  it("renders a complex document with mixed formatting", () => {
+    const markdown = render(
+      <Document>
+        <Header level={2}>Mixed Formatting</Header>
+        <Paragraph>
+          This paragraph has <Strong>bold</Strong>, <Emphasis>italic</Emphasis>,
+          and <InlineCode>code</InlineCode> formatting.
+        </Paragraph>
+        <Quote>
+          <Paragraph>This is a blockquote with a paragraph inside.</Paragraph>
+          <List>
+            <ListItem>And a list</ListItem>
+            <ListItem>Inside the quote</ListItem>
+          </List>
+        </Quote>
+        <HorizontalRule />
+        <Paragraph>Text after a horizontal rule</Paragraph>
+      </Document>
+    );
+
+    expect(markdown).toMatchInlineSnapshot(`
+      "## Mixed Formatting
+
+      This paragraph has **bold**, *italic*, and \`code\` formatting.
+
+      > This is a blockquote with a paragraph inside.
+      >
+      > - And a list
+      > - Inside the quote
+
+      ---
+
+      Text after a horizontal rule
+      "
+    `);
+  });
+
+  it("handles ordered lists", () => {
+    const markdown = render(
+      <Document>
+        <List ordered={true}>
+          <ListItem>First item</ListItem>
+          <ListItem>Second item</ListItem>
+          <ListItem>
+            <Paragraph>Item with a paragraph</Paragraph>
+            <List>
+              <ListItem>Nested item</ListItem>
+            </List>
+          </ListItem>
+        </List>
+      </Document>
+    );
+
+    expect(markdown).toMatchInlineSnapshot(`
+      "1. First item
+      2. Second item
+      3.
+      "
+    `);
+  });
+
+  it("handles deeply nested list structures", () => {
+    const markdown = render(
+      <Document>
+        <List>
+          <ListItem>
+            Top level list item
+            <List>
+              <ListItem>
+                Second level list item
+                <List ordered={true}>
+                  <ListItem>Ordered sub-item 1</ListItem>
+                  <ListItem>
+                    Ordered sub-item 2
+                    <List>
+                      <ListItem>Third level nesting</ListItem>
+                      <ListItem>Another third level item</ListItem>
+                    </List>
+                  </ListItem>
+                </List>
+              </ListItem>
+              <ListItem>Another second level item</ListItem>
+            </List>
+          </ListItem>
+          <ListItem>Another top level item</ListItem>
+        </List>
+      </Document>
+    );
+
+    expect(markdown).toMatchInlineSnapshot(`
+      "- Top level list item
+      - Another top level item
+      "
+    `);
+  });
+
+  it("handles edge case with mixed components and text formatting", () => {
+    const markdown = render(
+      <Document>
+        <Paragraph>
+          Text with <Strong>bold</Strong> and <Emphasis>italic</Emphasis> mixed
+          with
+          <InlineCode>inline code</InlineCode> and a{" "}
+          <Link href="https://example.com/test?query=value&other=123">
+            complex URL
+          </Link>
+        </Paragraph>
+        <List>
+          <ListItem>
+            <Strong>Item</Strong> with <Emphasis>mixed</Emphasis>{" "}
+            <InlineCode>formatting</InlineCode>
+          </ListItem>
+        </List>
+        <CodeBlock language="jsx">
+          {`// A code example with special characters: & < > " '
+function Example() {
+  return <div className="test">Content & more</div>;
+}`}
+        </CodeBlock>
+        <Paragraph>
+          Image with title:{" "}
+          <Image
+            src="/path/to/image.jpg"
+            alt="Alt text with 'quotes'"
+            title="Image title with quotes"
+          />
+        </Paragraph>
+      </Document>
+    );
+
+    expect(markdown).toMatchInlineSnapshot(`
+      "Text with **bold** and *italic* mixed with\`inline code\` and a [complex URL](https://example.com/test?query=value\\&other=123)
+
+      - **Item** with *mixed* \`formatting\`
+
+      \`\`\`jsx
+      // A code example with special characters: & < > " '
+      function Example() {
+        return <div className="test">Content & more</div>;
+      }
+      \`\`\`
+
+      Image with title:&#x20;
       "
     `);
   });

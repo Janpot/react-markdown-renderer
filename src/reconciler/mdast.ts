@@ -17,11 +17,42 @@ export function createMdast(node: MarkdownNode): Root {
   
   // Process Document node's children 
   if (node.type === 'Document') {
+    // Collect adjacent text/inline nodes to group into paragraphs
+    let pendingPhrasing: PhrasingContent[] = [];
+    
+    // Process each child and handle grouping
     for (const child of node.children) {
-      const content = createFlowContent(child);
-      if (content) {
-        rootNode.children.push(content);
+      // Check if this is an inline/text node
+      if (isInlineNode(child)) {
+        // Add to pending phrasing content
+        const phrasing = createPhrasing(child);
+        if (phrasing) {
+          pendingPhrasing.push(phrasing);
+        }
+      } else {
+        // If we have pending phrasing content, create a paragraph and add it
+        if (pendingPhrasing.length > 0) {
+          rootNode.children.push({
+            type: 'paragraph',
+            children: pendingPhrasing
+          });
+          pendingPhrasing = []; // Reset pending content
+        }
+        
+        // Process the block-level content normally
+        const content = createFlowContent(child);
+        if (content) {
+          rootNode.children.push(content);
+        }
       }
+    }
+    
+    // Add any remaining pending phrasing content
+    if (pendingPhrasing.length > 0) {
+      rootNode.children.push({
+        type: 'paragraph',
+        children: pendingPhrasing
+      });
     }
   } else {
     // If the top node isn't Document, try to convert it directly
@@ -32,6 +63,15 @@ export function createMdast(node: MarkdownNode): Root {
   }
   
   return rootNode;
+}
+
+/**
+ * Check if a node is an inline-level element that should be wrapped in a paragraph
+ */
+function isInlineNode(node: MarkdownNode): boolean {
+  // These node types should be considered inline
+  // Note: img is not included here since we want images to be individual block elements
+  return ['text', 'strong', 'em', 'code', 'a'].includes(node.type);
 }
 
 /**
