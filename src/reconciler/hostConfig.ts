@@ -1,9 +1,10 @@
-import { HostConfig } from 'react-reconciler';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import type { HostConfig } from 'react-reconciler';
 
 // Interface for our Markdown node representation
 export interface MarkdownNode {
   type: string;
-  props: Record<string, any>;
+  props: Record<string, unknown>;
   children: MarkdownNode[];
   text?: string;
   parent?: MarkdownNode;
@@ -11,24 +12,40 @@ export interface MarkdownNode {
 
 // Type definitions for host context
 type Type = string;
-type Props = Record<string, any>;
+type Props = Record<string, unknown>;
 type Container = {
   root: MarkdownNode;
   nodes: Map<number, MarkdownNode>;
 };
 type Instance = MarkdownNode;
 type TextInstance = MarkdownNode;
-type HydratableInstance = null;
+type HydratableInstance = never;
 type PublicInstance = MarkdownNode;
 type HostContext = null;
-type UpdatePayload = null;
-type ChildSet = null;
+type UpdatePayload = Record<string, unknown>;
+type ChildSet = never;
 type TimeoutHandle = NodeJS.Timeout;
 type NoTimeout = -1;
+type SuspenseInstance = never;
 
-export const hostConfig: any = {
-  // Required by Interface
-  now: Date.now,
+// Define the HostConfig type for our markdown renderer
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore - HostConfig type is not fully compatible with our implementation
+export const hostConfig: HostConfig<
+  Type,
+  Props,
+  Container,
+  Instance,
+  TextInstance,
+  SuspenseInstance,
+  HydratableInstance,
+  PublicInstance,
+  HostContext,
+  UpdatePayload,
+  ChildSet,
+  TimeoutHandle,
+  NoTimeout
+> = {
   isPrimaryRenderer: true,
   noTimeout: -1 as const,
 
@@ -37,30 +54,25 @@ export const hostConfig: any = {
   supportsHydration: false,
 
   // Required for React 18
-  getPublicInstance(instance: Instance): PublicInstance {
+  getPublicInstance(instance) {
     return instance;
   },
 
-  getRootHostContext(): HostContext {
+  getRootHostContext() {
     return null;
   },
 
-  getChildHostContext(parentHostContext: HostContext): HostContext {
+  getChildHostContext(_parentHostContext) {
     return null;
   },
 
-  prepareForCommit(): null {
+  prepareForCommit() {
     return null;
   },
 
   resetAfterCommit() {},
 
-  createInstance(
-    type: Type,
-    props: Props,
-    rootContainer: Container,
-    hostContext: HostContext
-  ): Instance {
+  createInstance(type, props, _rootContainer, _hostContext) {
     return {
       type,
       props,
@@ -68,41 +80,32 @@ export const hostConfig: any = {
     };
   },
 
-  appendInitialChild(parentInstance: Instance, child: Instance | TextInstance) {
+  appendInitialChild(parentInstance, child) {
     parentInstance.children.push(child);
     child.parent = parentInstance;
   },
 
-  finalizeInitialChildren(
-    instance: Instance,
-    type: Type,
-    props: Props,
-    rootContainer: Container,
-    hostContext: HostContext
-  ): boolean {
+  finalizeInitialChildren(_instance, _type, _props, _rootContainer, _hostContext) {
     return false;
   },
 
   prepareUpdate(
-    instance: Instance,
-    type: Type,
-    oldProps: Props,
-    newProps: Props,
-    rootContainer: Container,
-    hostContext: HostContext
-  ): UpdatePayload {
-    return {} as unknown as UpdatePayload; // Return non-null to indicate update is needed
+    _instance,
+    _type,
+    _oldProps,
+    _newProps,
+    _rootContainer,
+    _hostContext
+  ) {
+    // Return a non-null value to indicate an update is needed
+    return {};
   },
 
-  shouldSetTextContent(type: Type, props: Props): boolean {
+  shouldSetTextContent(_type, _props) {
     return false;
   },
 
-  createTextInstance(
-    text: string,
-    rootContainer: Container,
-    hostContext: HostContext
-  ): TextInstance {
+  createTextInstance(text, _rootContainer, _hostContext) {
     return {
       type: 'text',
       props: {},
@@ -112,12 +115,12 @@ export const hostConfig: any = {
   },
 
   // Required for mutation
-  appendChild(parentInstance: Instance, child: Instance | TextInstance) {
+  appendChild(parentInstance, child) {
     parentInstance.children.push(child);
     child.parent = parentInstance;
   },
 
-  appendChildToContainer(container: Container, child: Instance | TextInstance) {
+  appendChildToContainer(container, child) {
     // Instead of replacing the root, we should set the root if it doesn't exist
     // or append to root's children if it does
     if (!container.root.type) {
@@ -139,11 +142,7 @@ export const hostConfig: any = {
     container.nodes.set(nodeId, child);
   },
 
-  insertBefore(
-    parentInstance: Instance,
-    child: Instance | TextInstance,
-    beforeChild: Instance | TextInstance
-  ) {
+  insertBefore(parentInstance, child, beforeChild) {
     const index = parentInstance.children.indexOf(beforeChild);
     if (index !== -1) {
       parentInstance.children.splice(index, 0, child);
@@ -151,15 +150,11 @@ export const hostConfig: any = {
     }
   },
 
-  insertInContainerBefore(
-    container: Container,
-    child: Instance | TextInstance,
-    beforeChild: Instance | TextInstance
-  ) {
+  insertInContainerBefore(_container, _child, _beforeChild) {
     // This shouldn't happen for our use case
   },
 
-  removeChild(parentInstance: Instance, child: Instance | TextInstance) {
+  removeChild(parentInstance, child) {
     const index = parentInstance.children.indexOf(child);
     if (index !== -1) {
       parentInstance.children.splice(index, 1);
@@ -167,10 +162,7 @@ export const hostConfig: any = {
     }
   },
 
-  removeChildFromContainer(
-    container: Container,
-    child: Instance | TextInstance
-  ) {
+  removeChildFromContainer(container, _child) {
     container.root = {
       type: 'Document',
       props: {},
@@ -179,11 +171,7 @@ export const hostConfig: any = {
     container.nodes.clear();
   },
 
-  commitTextUpdate(
-    textInstance: TextInstance,
-    oldText: string,
-    newText: string
-  ) {
+  commitTextUpdate(textInstance, _oldText, newText) {
     textInstance.text = newText;
   },
 
@@ -191,17 +179,11 @@ export const hostConfig: any = {
     // Noop
   },
 
-  commitUpdate(
-    instance: Instance,
-    updatePayload: UpdatePayload,
-    type: Type,
-    oldProps: Props,
-    newProps: Props
-  ) {
+  commitUpdate(instance, _updatePayload, _type, _oldProps, newProps) {
     instance.props = newProps;
   },
 
-  clearContainer(container: Container) {
+  clearContainer(container) {
     container.root = {
       type: 'Document',
       props: {},
@@ -212,7 +194,6 @@ export const hostConfig: any = {
 
   // Additional required React 18 methods
   detachDeletedInstance() {},
-  scheduleDeferredCallback: undefined,
   cancelDeferredCallback: undefined,
   scheduleTimeout: setTimeout,
   cancelTimeout: clearTimeout,
