@@ -186,7 +186,8 @@ describe("Markdown Renderer", () => {
     expect(markdown).toMatchInlineSnapshot(`
       "1. First item
       2. Second item
-      3.
+      3. Item with a paragraph
+         - Nested item
       "
     `);
   });
@@ -221,6 +222,12 @@ describe("Markdown Renderer", () => {
 
     expect(markdown).toMatchInlineSnapshot(`
       "- Top level list item
+        - Second level list item
+          1. Ordered sub-item 1
+          2. Ordered sub-item 2
+             - Third level nesting
+             - Another third level item
+        - Another second level item
       - Another top level item
       "
     `);

@@ -204,14 +204,77 @@ function createListItem(node: MarkdownNode): ListItem | null {
   if (node.type !== 'li') return null;
   
   // List items must contain flow content
-  // For simplicity, we'll wrap everything in a paragraph
+  const children: Content[] = [];
+  
+  // Track sequences of text nodes that need to be grouped into paragraphs
+  let currentTextGroup: MarkdownNode[] = [];
+  
+  // Process children in order, grouping adjacent text/inline nodes
+  for (let i = 0; i < node.children.length; i++) {
+    const child = node.children[i];
+    
+    if (child.type === 'ul' || child.type === 'ol' || 
+        child.type === 'p' || child.type === 'blockquote' || 
+        child.type === 'pre') {
+      // When we hit a block element, if we have collected text nodes, create a paragraph
+      if (currentTextGroup.length > 0) {
+        const textNode: MarkdownNode = {
+          type: 'p',
+          props: {},
+          children: currentTextGroup,
+          parent: node
+        };
+        
+        children.push({
+          type: 'paragraph',
+          children: createPhrasingContent(textNode)
+        });
+        
+        currentTextGroup = []; // Reset the group
+      }
+      
+      // Process the block element
+      const content = createFlowContent(child);
+      if (content) {
+        children.push(content);
+      }
+    } else {
+      // Add text/inline nodes to the current group
+      currentTextGroup.push(child);
+    }
+  }
+  
+  // Process any remaining text nodes at the end
+  if (currentTextGroup.length > 0 || node.text) {
+    // Create a temporary node to process the text content
+    const textNode: MarkdownNode = {
+      type: 'p',
+      props: {},
+      children: currentTextGroup,
+      parent: node,
+      text: node.text
+    };
+    
+    children.push({
+      type: 'paragraph',
+      children: createPhrasingContent(textNode)
+    });
+  }
+  
+  // No additional block content to process since we handled it inline
+  
+  // If no children were created, add an empty paragraph to maintain valid structure
+  if (children.length === 0) {
+    children.push({
+      type: 'paragraph',
+      children: []
+    });
+  }
+  
   return {
     type: 'listItem',
     spread: false,
-    children: [{
-      type: 'paragraph',
-      children: createPhrasingContent(node)
-    }]
+    children: children
   };
 }
 
