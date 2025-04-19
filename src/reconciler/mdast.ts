@@ -1,8 +1,16 @@
 import { MarkdownNode } from './hostConfig';
 // Import types for mdast compatible AST
 // These types are used by remark/unified ecosystem
-import type { Root, Content, PhrasingContent, Heading, Paragraph, Strong, 
-  Emphasis, Link, Image, List, ListItem, Code } from 'mdast';
+import type {
+  Root,
+  Content,
+  PhrasingContent,
+  Heading,
+  Paragraph,
+  Image,
+  ListItem,
+  Code,
+} from 'mdast';
 
 /**
  * Creates a valid MDAST (Markdown Abstract Syntax Tree) from our component tree.
@@ -12,14 +20,14 @@ export function createMdast(node: MarkdownNode): Root {
   // Create root node
   const rootNode: Root = {
     type: 'root',
-    children: []
+    children: [],
   };
-  
-  // Process Document node's children 
+
+  // Process Document node's children
   if (node.type === 'Document') {
     // Collect adjacent text/inline nodes to group into paragraphs
     let pendingPhrasing: PhrasingContent[] = [];
-    
+
     // Process each child and handle grouping
     for (const child of node.children) {
       // Check if this is an inline/text node
@@ -34,11 +42,11 @@ export function createMdast(node: MarkdownNode): Root {
         if (pendingPhrasing.length > 0) {
           rootNode.children.push({
             type: 'paragraph',
-            children: pendingPhrasing
+            children: pendingPhrasing,
           });
           pendingPhrasing = []; // Reset pending content
         }
-        
+
         // Process the block-level content normally
         const content = createFlowContent(child);
         if (content) {
@@ -46,12 +54,12 @@ export function createMdast(node: MarkdownNode): Root {
         }
       }
     }
-    
+
     // Add any remaining pending phrasing content
     if (pendingPhrasing.length > 0) {
       rootNode.children.push({
         type: 'paragraph',
-        children: pendingPhrasing
+        children: pendingPhrasing,
       });
     }
   } else {
@@ -61,7 +69,7 @@ export function createMdast(node: MarkdownNode): Root {
       rootNode.children.push(content);
     }
   }
-  
+
   return rootNode;
 }
 
@@ -81,51 +89,57 @@ function createFlowContent(node: MarkdownNode): Content | null {
   switch (node.type) {
     case 'header': {
       // Headers become heading nodes with phrasing content children
-      const level = Math.min(Math.max(node.props['data-level'] || 1, 1), 6) as 1 | 2 | 3 | 4 | 5 | 6;
+      const level = Math.min(Math.max(node.props['data-level'] || 1, 1), 6) as
+        | 1
+        | 2
+        | 3
+        | 4
+        | 5
+        | 6;
       const headingNode: Heading = {
         type: 'heading',
         depth: level,
-        children: createPhrasingContent(node)
+        children: createPhrasingContent(node),
       };
       return headingNode;
     }
-    
+
     case 'p': {
       // Paragraphs contain phrasing content
       const paragraphNode: Paragraph = {
         type: 'paragraph',
-        children: createPhrasingContent(node)
+        children: createPhrasingContent(node),
       };
       return paragraphNode;
     }
-    
+
     case 'blockquote': {
       // Blockquotes contain flow content
       return {
         type: 'blockquote',
         children: node.children
           .map(createFlowContent)
-          .filter(Boolean) as Content[]
+          .filter(Boolean) as Content[],
       };
     }
-    
+
     case 'pre': {
       // Pre elements become code blocks
-      const codeNode = node.children.find(child => child.type === 'code');
+      const codeNode = node.children.find((child) => child.type === 'code');
       if (codeNode) {
         const language = node.props['data-language'] || '';
         const value = extractTextContent(codeNode);
-        
+
         const codeBlock: Code = {
           type: 'code',
           lang: language,
-          value: value
+          value: value,
         };
         return codeBlock;
       }
       return null;
     }
-    
+
     case 'ul': {
       // Unordered lists contain list items
       return {
@@ -133,12 +147,12 @@ function createFlowContent(node: MarkdownNode): Content | null {
         ordered: false,
         spread: false,
         children: node.children
-          .filter(child => child.type === 'li')
+          .filter((child) => child.type === 'li')
           .map(createListItem)
-          .filter(Boolean) as ListItem[]
+          .filter(Boolean) as ListItem[],
       };
     }
-    
+
     case 'ol': {
       // Ordered lists contain list items
       return {
@@ -146,52 +160,52 @@ function createFlowContent(node: MarkdownNode): Content | null {
         ordered: true,
         spread: false,
         children: node.children
-          .filter(child => child.type === 'li')
+          .filter((child) => child.type === 'li')
           .map(createListItem)
-          .filter(Boolean) as ListItem[]
+          .filter(Boolean) as ListItem[],
       };
     }
-    
+
     case 'hr': {
       // Horizontal rules are thematic breaks
       return { type: 'thematicBreak' };
     }
-    
+
     case 'text':
     case 'strong':
     case 'em':
-    case 'a': 
+    case 'a':
     case 'code': {
       // Inline elements need to be wrapped in a paragraph to be valid flow content
       const content = createPhrasing(node);
       if (content) {
         return {
           type: 'paragraph',
-          children: [content]
+          children: [content],
         };
       }
       return null;
     }
-    
+
     case 'img': {
       // Images need to be wrapped in paragraphs (common markdown convention)
       const src = node.props.src || '';
       const alt = node.props.alt || '';
       const title = node.props.title || null;
-      
+
       const imageNode: Image = {
         type: 'image',
         url: src,
         alt: alt,
-        title: title
+        title: title,
       };
-      
+
       return {
         type: 'paragraph',
-        children: [imageNode]
+        children: [imageNode],
       };
     }
-    
+
     default:
       return null;
   }
@@ -202,37 +216,41 @@ function createFlowContent(node: MarkdownNode): Content | null {
  */
 function createListItem(node: MarkdownNode): ListItem | null {
   if (node.type !== 'li') return null;
-  
+
   // List items must contain flow content
   const children: Content[] = [];
-  
+
   // Track sequences of text nodes that need to be grouped into paragraphs
   let currentTextGroup: MarkdownNode[] = [];
-  
+
   // Process children in order, grouping adjacent text/inline nodes
   for (let i = 0; i < node.children.length; i++) {
     const child = node.children[i];
-    
-    if (child.type === 'ul' || child.type === 'ol' || 
-        child.type === 'p' || child.type === 'blockquote' || 
-        child.type === 'pre') {
+
+    if (
+      child.type === 'ul' ||
+      child.type === 'ol' ||
+      child.type === 'p' ||
+      child.type === 'blockquote' ||
+      child.type === 'pre'
+    ) {
       // When we hit a block element, if we have collected text nodes, create a paragraph
       if (currentTextGroup.length > 0) {
         const textNode: MarkdownNode = {
           type: 'p',
           props: {},
           children: currentTextGroup,
-          parent: node
+          parent: node,
         };
-        
+
         children.push({
           type: 'paragraph',
-          children: createPhrasingContent(textNode)
+          children: createPhrasingContent(textNode),
         });
-        
+
         currentTextGroup = []; // Reset the group
       }
-      
+
       // Process the block element
       const content = createFlowContent(child);
       if (content) {
@@ -243,7 +261,7 @@ function createListItem(node: MarkdownNode): ListItem | null {
       currentTextGroup.push(child);
     }
   }
-  
+
   // Process any remaining text nodes at the end
   if (currentTextGroup.length > 0 || node.text) {
     // Create a temporary node to process the text content
@@ -252,29 +270,29 @@ function createListItem(node: MarkdownNode): ListItem | null {
       props: {},
       children: currentTextGroup,
       parent: node,
-      text: node.text
+      text: node.text,
     };
-    
+
     children.push({
       type: 'paragraph',
-      children: createPhrasingContent(textNode)
+      children: createPhrasingContent(textNode),
     });
   }
-  
+
   // No additional block content to process since we handled it inline
-  
+
   // If no children were created, add an empty paragraph to maintain valid structure
   if (children.length === 0) {
     children.push({
       type: 'paragraph',
-      children: []
+      children: [],
     });
   }
-  
+
   return {
     type: 'listItem',
     spread: false,
-    children: children
+    children: children,
   };
 }
 
@@ -286,48 +304,48 @@ function createPhrasing(node: MarkdownNode): PhrasingContent | null {
     case 'text': {
       return {
         type: 'text',
-        value: node.text || ''
+        value: node.text || '',
       };
     }
-    
+
     case 'strong': {
       return {
         type: 'strong',
-        children: createPhrasingContent(node)
+        children: createPhrasingContent(node),
       };
     }
-    
+
     case 'em': {
       return {
         type: 'emphasis',
-        children: createPhrasingContent(node)
+        children: createPhrasingContent(node),
       };
     }
-    
+
     case 'code': {
       // Only handle inline code here (code blocks are handled by pre)
       if (node.parent && node.parent.type === 'pre') {
         return null;
       }
-      
+
       return {
         type: 'inlineCode',
-        value: extractTextContent(node)
+        value: extractTextContent(node),
       };
     }
-    
+
     case 'a': {
       const href = node.props.href || '';
       const title = node.props.title || null;
-      
+
       return {
         type: 'link',
         url: href,
         title: title,
-        children: createPhrasingContent(node)
+        children: createPhrasingContent(node),
       };
     }
-    
+
     default:
       return null;
   }
@@ -339,16 +357,16 @@ function createPhrasing(node: MarkdownNode): PhrasingContent | null {
 function createPhrasingContent(node: MarkdownNode): PhrasingContent[] {
   // For text nodes, return them directly
   if (node.type === 'text' && node.text) {
-    return [{
-      type: 'text',
-      value: node.text
-    }];
+    return [
+      {
+        type: 'text',
+        value: node.text,
+      },
+    ];
   }
-  
+
   // Process children to create phrasing content
-  return node.children
-    .map(createPhrasing)
-    .filter(Boolean) as PhrasingContent[];
+  return node.children.map(createPhrasing).filter(Boolean) as PhrasingContent[];
 }
 
 /**
@@ -358,6 +376,6 @@ function extractTextContent(node: MarkdownNode): string {
   if (node.type === 'text' && node.text) {
     return node.text;
   }
-  
+
   return node.children.map(extractTextContent).join('');
 }

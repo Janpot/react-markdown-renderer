@@ -14,7 +14,7 @@ import {
   ListProps,
   ListItemProps,
   HorizontalRuleProps,
-  ThematicBreakProps
+  ThematicBreakProps,
 } from './types';
 
 export const Document: React.FC<DocumentProps> = ({ children }) => {
@@ -46,7 +46,11 @@ export const InlineCode: React.FC<InlineCodeProps> = ({ children }) => {
 };
 
 export const CodeBlock: React.FC<CodeBlockProps> = ({ language, children }) => {
-  return <pre data-language={language}><code>{children}</code></pre>;
+  return (
+    <pre data-language={language}>
+      <code>{children}</code>
+    </pre>
+  );
 };
 
 export const Quote: React.FC<QuoteProps> = ({ children }) => {
@@ -54,7 +58,11 @@ export const Quote: React.FC<QuoteProps> = ({ children }) => {
 };
 
 export const Link: React.FC<LinkProps> = ({ href, title, children }) => {
-  return <a href={href} title={title}>{children}</a>;
+  return (
+    <a href={href} title={title}>
+      {children}
+    </a>
+  );
 };
 
 export const Image: React.FC<ImageProps> = ({ src, alt, title }) => {

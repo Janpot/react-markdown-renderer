@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import React from "react";
+import { describe, it, expect } from 'vitest';
+import React from 'react';
 import {
   render,
   Document,
@@ -15,11 +15,10 @@ import {
   InlineCode,
   Quote,
   HorizontalRule,
-  Text,
-} from "../src";
+} from '../src';
 
-describe("Markdown Renderer", () => {
-  it("renders a simple document", () => {
+describe('Markdown Renderer', () => {
+  it('renders a simple document', () => {
     const markdown = render(
       <Document>
         <Header level={1}>Title</Header>
@@ -58,7 +57,7 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("renders nested content correctly", () => {
+  it('renders nested content correctly', () => {
     const markdown = render(
       <Document>
         <Header level={2}>Nested Content</Header>
@@ -83,7 +82,7 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("handles top-level text nodes", () => {
+  it('handles top-level text nodes', () => {
     const markdown = render(
       <Document>
         This is a top-level text node with <Strong>bold text</Strong>
@@ -96,7 +95,7 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("renders nested paragraphs correctly", () => {
+  it('renders nested paragraphs correctly', () => {
     const markdown = render(
       <Document>
         <Paragraph>
@@ -112,7 +111,7 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("handles empty elements", () => {
+  it('handles empty elements', () => {
     const markdown = render(
       <Document>
         <Header level={1}></Header>
@@ -130,7 +129,7 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("renders a complex document with mixed formatting", () => {
+  it('renders a complex document with mixed formatting', () => {
     const markdown = render(
       <Document>
         <Header level={2}>Mixed Formatting</Header>
@@ -167,7 +166,7 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("handles ordered lists", () => {
+  it('handles ordered lists', () => {
     const markdown = render(
       <Document>
         <List ordered={true}>
@@ -192,7 +191,7 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("handles deeply nested list structures", () => {
+  it('handles deeply nested list structures', () => {
     const markdown = render(
       <Document>
         <List>
@@ -233,20 +232,20 @@ describe("Markdown Renderer", () => {
     `);
   });
 
-  it("handles edge case with mixed components and text formatting", () => {
+  it('handles edge case with mixed components and text formatting', () => {
     const markdown = render(
       <Document>
         <Paragraph>
           Text with <Strong>bold</Strong> and <Emphasis>italic</Emphasis> mixed
           with
-          <InlineCode>inline code</InlineCode> and a{" "}
+          <InlineCode>inline code</InlineCode> and a{' '}
           <Link href="https://example.com/test?query=value&other=123">
             complex URL
           </Link>
         </Paragraph>
         <List>
           <ListItem>
-            <Strong>Item</Strong> with <Emphasis>mixed</Emphasis>{" "}
+            <Strong>Item</Strong> with <Emphasis>mixed</Emphasis>{' '}
             <InlineCode>formatting</InlineCode>
           </ListItem>
         </List>
@@ -257,7 +256,7 @@ function Example() {
 }`}
         </CodeBlock>
         <Paragraph>
-          Image with title:{" "}
+          Image with title:{' '}
           <Image
             src="/path/to/image.jpg"
             alt="Alt text with 'quotes'"

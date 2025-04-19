@@ -26,37 +26,35 @@ type ChildSet = null;
 type TimeoutHandle = NodeJS.Timeout;
 type NoTimeout = -1;
 
-// Host config for markdown rendering
-// Type casting to any to avoid TypeScript errors with incompatible react-reconciler types
 export const hostConfig: any = {
   // Required by Interface
   now: Date.now,
   isPrimaryRenderer: true,
   noTimeout: -1 as const,
-  
+
   supportsMutation: true,
   supportsPersistence: false,
   supportsHydration: false,
-  
+
   // Required for React 18
   getPublicInstance(instance: Instance): PublicInstance {
     return instance;
   },
-  
+
   getRootHostContext(): HostContext {
     return null;
   },
-  
+
   getChildHostContext(parentHostContext: HostContext): HostContext {
     return null;
   },
-  
+
   prepareForCommit(): null {
     return null;
   },
-  
+
   resetAfterCommit() {},
-  
+
   createInstance(
     type: Type,
     props: Props,
@@ -69,12 +67,12 @@ export const hostConfig: any = {
       children: [],
     };
   },
-  
+
   appendInitialChild(parentInstance: Instance, child: Instance | TextInstance) {
     parentInstance.children.push(child);
     child.parent = parentInstance;
   },
-  
+
   finalizeInitialChildren(
     instance: Instance,
     type: Type,
@@ -84,7 +82,7 @@ export const hostConfig: any = {
   ): boolean {
     return false;
   },
-  
+
   prepareUpdate(
     instance: Instance,
     type: Type,
@@ -95,11 +93,11 @@ export const hostConfig: any = {
   ): UpdatePayload {
     return {} as unknown as UpdatePayload; // Return non-null to indicate update is needed
   },
-  
+
   shouldSetTextContent(type: Type, props: Props): boolean {
     return false;
   },
-  
+
   createTextInstance(
     text: string,
     rootContainer: Container,
@@ -112,13 +110,13 @@ export const hostConfig: any = {
       text,
     };
   },
-  
+
   // Required for mutation
   appendChild(parentInstance: Instance, child: Instance | TextInstance) {
     parentInstance.children.push(child);
     child.parent = parentInstance;
   },
-  
+
   appendChildToContainer(container: Container, child: Instance | TextInstance) {
     // Instead of replacing the root, we should set the root if it doesn't exist
     // or append to root's children if it does
@@ -131,16 +129,16 @@ export const hostConfig: any = {
       const document: MarkdownNode = {
         type: 'Document',
         props: {},
-        children: [container.root, child]
+        children: [container.root, child],
       };
       container.root = document;
     }
-    
+
     // Add to nodes map for reference
     const nodeId = container.nodes.size;
     container.nodes.set(nodeId, child);
   },
-  
+
   insertBefore(
     parentInstance: Instance,
     child: Instance | TextInstance,
@@ -152,7 +150,7 @@ export const hostConfig: any = {
       child.parent = parentInstance;
     }
   },
-  
+
   insertInContainerBefore(
     container: Container,
     child: Instance | TextInstance,
@@ -160,7 +158,7 @@ export const hostConfig: any = {
   ) {
     // This shouldn't happen for our use case
   },
-  
+
   removeChild(parentInstance: Instance, child: Instance | TextInstance) {
     const index = parentInstance.children.indexOf(child);
     if (index !== -1) {
@@ -168,8 +166,11 @@ export const hostConfig: any = {
       child.parent = undefined;
     }
   },
-  
-  removeChildFromContainer(container: Container, child: Instance | TextInstance) {
+
+  removeChildFromContainer(
+    container: Container,
+    child: Instance | TextInstance
+  ) {
     container.root = {
       type: 'Document',
       props: {},
@@ -177,7 +178,7 @@ export const hostConfig: any = {
     };
     container.nodes.clear();
   },
-  
+
   commitTextUpdate(
     textInstance: TextInstance,
     oldText: string,
@@ -185,11 +186,11 @@ export const hostConfig: any = {
   ) {
     textInstance.text = newText;
   },
-  
+
   commitMount() {
     // Noop
   },
-  
+
   commitUpdate(
     instance: Instance,
     updatePayload: UpdatePayload,
@@ -199,7 +200,7 @@ export const hostConfig: any = {
   ) {
     instance.props = newProps;
   },
-  
+
   clearContainer(container: Container) {
     container.root = {
       type: 'Document',
@@ -208,7 +209,7 @@ export const hostConfig: any = {
     };
     container.nodes.clear();
   },
-  
+
   // Additional required React 18 methods
   detachDeletedInstance() {},
   scheduleDeferredCallback: undefined,
@@ -216,8 +217,12 @@ export const hostConfig: any = {
   scheduleTimeout: setTimeout,
   cancelTimeout: clearTimeout,
   preparePortalMount() {},
-  getCurrentEventPriority() { return 0; },
-  getInstanceFromNode() { return null; },
+  getCurrentEventPriority() {
+    return 0;
+  },
+  getInstanceFromNode() {
+    return null;
+  },
   beforeActiveInstanceBlur() {},
   afterActiveInstanceBlur() {},
 };

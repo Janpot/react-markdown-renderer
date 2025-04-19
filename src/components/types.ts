@@ -59,9 +59,17 @@ export interface ListItemProps {
   children?: ReactNode;
 }
 
-export interface HorizontalRuleProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface HorizontalRuleProps {
+  // This interface intentionally left empty as HorizontalRule has no props
+  // but needs to exist for consistent typing
+}
 
-export interface ThematicBreakProps {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ThematicBreakProps {
+  // This interface intentionally left empty as ThematicBreak has no props
+  // but needs to exist for consistent typing
+}
 
 export interface MarkdownComponents {
   Document: React.FC<DocumentProps>;
