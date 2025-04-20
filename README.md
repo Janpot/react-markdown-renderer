@@ -80,7 +80,9 @@ const markdown = render(
     <md-heading depth={1}>Direct Primitive Usage</md-heading>
     <md-paragraph>
       This uses <md-strong>primitives directly</md-strong> with a{' '}
-      <md-link url="https://example.com" title="Optional title">link</md-link>
+      <md-link url="https://example.com" title="Optional title">
+        link
+      </md-link>
     </md-paragraph>
     <md-list ordered={false}>
       <md-listItem>First item</md-listItem>

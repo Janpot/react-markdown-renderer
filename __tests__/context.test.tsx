@@ -1,21 +1,43 @@
 import { describe, it, expect } from 'vitest';
 import React, { createContext, useContext } from 'react';
-import { render, Document, Paragraph, Strong, Emphasis, List, ListItem, Header } from '../src';
+import {
+  render,
+  Document,
+  Paragraph,
+  Strong,
+  Emphasis,
+  List,
+  ListItem,
+  Header,
+} from '../src';
 
 // Create a documentation version context
 const VersionContext = createContext('1.0.0');
 
 // Create a component that conditionally renders content based on version
-const VersionedContent = ({ minVersion, children }: { minVersion: string, children: React.ReactNode }) => {
+const VersionedContent = ({
+  minVersion,
+  children,
+}: {
+  minVersion: string;
+  children: React.ReactNode;
+}) => {
   const version = useContext(VersionContext);
-  
+
   // Simple version comparison (only works for semver with same number of segments)
-  const isAvailable = version.localeCompare(minVersion, undefined, { numeric: true }) >= 0;
-  
+  const isAvailable =
+    version.localeCompare(minVersion, undefined, { numeric: true }) >= 0;
+
   if (!isAvailable) {
-    return <Paragraph><Emphasis>This feature is available in version {minVersion} and later.</Emphasis></Paragraph>;
+    return (
+      <Paragraph>
+        <Emphasis>
+          This feature is available in version {minVersion} and later.
+        </Emphasis>
+      </Paragraph>
+    );
   }
-  
+
   return <>{children}</>;
 };
 
@@ -36,7 +58,9 @@ describe('React Context Support', () => {
         <Header level={1}>API Documentation</Header>
         <VersionInfo />
         <VersionedContent minVersion="1.0.0">
-          <Paragraph>This feature is available in the current version.</Paragraph>
+          <Paragraph>
+            This feature is available in the current version.
+          </Paragraph>
         </VersionedContent>
       </Document>
     );
@@ -103,7 +127,7 @@ describe('React Context Support', () => {
             <ListItem>Feature A</ListItem>
             <ListItem>Feature B</ListItem>
           </List>
-          
+
           <Header level={2}>Beta Features</Header>
           <VersionContext.Provider value="1.2.0-beta">
             <VersionInfo />

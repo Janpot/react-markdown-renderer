@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { HostConfig } from 'react-reconciler';
 import { MarkdownNode, MdText, MdElm, createRoot } from './mdast';
+import { invariant } from '../utils/invariant';
 
 // Type definitions for host context
 type Type = 'md-text' | 'md-elm';
@@ -199,6 +200,7 @@ export const hostConfig: HostConfig<
 
   commitUpdate(instance, _updatePayload, type, _oldProps, newProps) {
     if (type === 'md-text' && instance.type === 'md-text') {
+      // @ts-expect-error
       instance.value = newProps.value || '';
       return;
     }

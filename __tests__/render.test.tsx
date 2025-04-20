@@ -9,12 +9,12 @@ import {
   Link,
   List,
   ListItem,
-  CodeBlock,
+  Code,
   Image,
   Emphasis,
   InlineCode,
   Quote,
-  HorizontalRule,
+  ThematicBreak,
 } from '../src';
 
 describe('Markdown Renderer', () => {
@@ -31,9 +31,7 @@ describe('Markdown Renderer', () => {
           <ListItem>Item 2</ListItem>
           <ListItem>Item 3</ListItem>
         </List>
-        <CodeBlock language="javascript">
-          {`console.log('Hello, world!');`}
-        </CodeBlock>
+        <Code language="javascript">{`console.log('Hello, world!');`}</Code>
         <Image src="https://example.com/image.png" alt="Example Image" />
       </Document>
     );
@@ -144,7 +142,7 @@ describe('Markdown Renderer', () => {
             <ListItem>Inside the quote</ListItem>
           </List>
         </Quote>
-        <HorizontalRule />
+        <ThematicBreak />
         <Paragraph>Text after a horizontal rule</Paragraph>
       </Document>
     );
@@ -249,12 +247,12 @@ describe('Markdown Renderer', () => {
             <InlineCode>formatting</InlineCode>
           </ListItem>
         </List>
-        <CodeBlock language="jsx">
+        <Code language="jsx">
           {`// A code example with special characters: & < > " '
 function Example() {
   return <div className="test">Content & more</div>;
 }`}
-        </CodeBlock>
+        </Code>
         <Paragraph>
           Image with title:{' '}
           <Image

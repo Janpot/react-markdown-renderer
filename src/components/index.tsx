@@ -6,15 +6,22 @@ import {
   StrongProps,
   EmphasisProps,
   InlineCodeProps,
-  CodeBlockProps,
+  CodeProps,
   QuoteProps,
   LinkProps,
   ImageProps,
   ListProps,
   ListItemProps,
-  HorizontalRuleProps,
   ThematicBreakProps,
 } from './types';
+
+declare module 'react/jsx-runtime' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'md-elm': any;
+    }
+  }
+}
 
 // Higher-level component abstractions that use our simplified node structure
 export const Document: React.FC<DocumentProps> = ({ children }) => {
@@ -45,7 +52,7 @@ export const InlineCode: React.FC<InlineCodeProps> = ({ children }) => {
   return <md-elm elmType="inlineCode" value={children} />;
 };
 
-export const CodeBlock: React.FC<CodeBlockProps> = ({ language, children }) => {
+export const Code: React.FC<CodeProps> = ({ language, children }) => {
   return <md-elm elmType="code" lang={language} value={children} />;
 };
 
@@ -75,10 +82,6 @@ export const List: React.FC<ListProps> = ({ ordered = false, children }) => {
 
 export const ListItem: React.FC<ListItemProps> = ({ children }) => {
   return <md-elm elmType="listItem">{children}</md-elm>;
-};
-
-export const HorizontalRule: React.FC<HorizontalRuleProps> = () => {
-  return <md-elm elmType="thematicBreak" />;
 };
 
 export const ThematicBreak: React.FC<ThematicBreakProps> = () => {
