@@ -2,14 +2,12 @@
 // These types are used by remark/unified ecosystem
 import type {
   Root,
-  Content,
   PhrasingContent,
   Heading,
   Paragraph,
   Image,
   ListItem,
   Code,
-  RootContent,
   BlockContent,
   DefinitionContent,
 } from 'mdast';
@@ -61,7 +59,7 @@ export function createMdast(node: MarkdownNode): Root {
     if (currentNode.type === 'md-text') {
       return [currentNode];
     }
-    
+
     if (currentNode.elmType !== 'root') {
       return [currentNode];
     }
@@ -85,7 +83,7 @@ export function createMdast(node: MarkdownNode): Root {
   // Process all the content nodes
   let currentPhrasing: PhrasingContent[] = [];
   let lastWasBlock = false;
-  
+
   for (const contentNode of contentNodes) {
     // Group adjacent inline nodes into paragraphs
     if (isInlineNode(contentNode)) {
@@ -103,7 +101,7 @@ export function createMdast(node: MarkdownNode): Root {
         });
         currentPhrasing = [];
       }
-      
+
       // Process block-level content normally
       const content = createFlowContent(contentNode);
       if (content) {
@@ -112,7 +110,7 @@ export function createMdast(node: MarkdownNode): Root {
       }
     }
   }
-  
+
   // Add any remaining pending phrasing content
   if (currentPhrasing.length > 0) {
     rootNode.children.push({
@@ -131,7 +129,7 @@ function isInlineNode(node: MarkdownNode): boolean {
   if (node.type === 'md-text') {
     return true;
   }
-  
+
   // These node types should be considered inline
   // Note: Image is not included here since we want images to be individual block elements
   const inlineTypes = ['strong', 'emphasis', 'inlineCode', 'link'];
@@ -148,17 +146,19 @@ function createFlowContent(
     // Text nodes are wrapped in paragraphs when they're at the flow level
     return {
       type: 'paragraph',
-      children: [{
-        type: 'text',
-        value: node.value || '',
-      }],
+      children: [
+        {
+          type: 'text',
+          value: node.value || '',
+        },
+      ],
     };
   }
-  
+
   if (node.type !== 'md-elm') {
     throw new Error(`Unknown node type: ${(node as any).type}`);
   }
-  
+
   // Handle element nodes based on their elmType
   switch (node.elmType) {
     case 'root': {
@@ -166,7 +166,7 @@ function createFlowContent(
       if (node.children.length > 0) {
         return createFlowContent(node.children[0]);
       }
-      
+
       // Default fallback to empty paragraph
       return {
         type: 'paragraph',
@@ -220,7 +220,9 @@ function createFlowContent(
         ordered: !!node.props.ordered,
         spread: false,
         children: node.children
-          .filter(child => child.type === 'md-elm' && child.elmType === 'listItem')
+          .filter(
+            (child) => child.type === 'md-elm' && child.elmType === 'listItem'
+          )
           .map(createListItem)
           .filter(Boolean) as ListItem[],
       };
@@ -283,12 +285,11 @@ function createListItem(node: MarkdownNode): ListItem | null {
     const child = node.children[i];
 
     if (
-      (child.type === 'md-elm' && (
-        child.elmType === 'list' ||
+      child.type === 'md-elm' &&
+      (child.elmType === 'list' ||
         child.elmType === 'paragraph' ||
         child.elmType === 'blockquote' ||
-        child.elmType === 'code'
-      ))
+        child.elmType === 'code')
     ) {
       // When we hit a block element, if we have collected text nodes, create a paragraph
       if (currentTextGroup.length > 0) {
@@ -361,11 +362,11 @@ function createPhrasing(node: MarkdownNode): PhrasingContent | null {
       value: node.value || '',
     };
   }
-  
+
   if (node.type !== 'md-elm') {
     return null;
   }
-  
+
   switch (node.elmType) {
     case 'strong': {
       return {

@@ -22,7 +22,11 @@ export const Document: React.FC<DocumentProps> = ({ children }) => {
 };
 
 export const Header: React.FC<HeaderProps> = ({ level, children }) => {
-  return <md-elm elmType="heading" depth={level}>{children}</md-elm>;
+  return (
+    <md-elm elmType="heading" depth={level}>
+      {children}
+    </md-elm>
+  );
 };
 
 export const Paragraph: React.FC<ParagraphProps> = ({ children }) => {
@@ -62,7 +66,11 @@ export const Image: React.FC<ImageProps> = ({ src, alt, title }) => {
 };
 
 export const List: React.FC<ListProps> = ({ ordered = false, children }) => {
-  return <md-elm elmType="list" ordered={ordered}>{children}</md-elm>;
+  return (
+    <md-elm elmType="list" ordered={ordered}>
+      {children}
+    </md-elm>
+  );
 };
 
 export const ListItem: React.FC<ListItemProps> = ({ children }) => {

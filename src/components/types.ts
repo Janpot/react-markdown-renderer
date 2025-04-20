@@ -25,7 +25,7 @@ export interface InlineCodeProps {
   children: string;
 }
 
-export interface CodeBlockProps {
+export interface CodeProps {
   language?: string;
   children: string;
 }
@@ -56,15 +56,18 @@ export interface ListItemProps {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface HorizontalRuleProps {
-  // This interface intentionally left empty as HorizontalRule has no props
-  // but needs to exist for consistent typing
-}
-
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ThematicBreakProps {
   // This interface intentionally left empty as ThematicBreak has no props
   // but needs to exist for consistent typing
+}
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'md-elm': any;
+      'md-text': any;
+    }
+  }
 }
 
 export interface MarkdownComponents {
@@ -74,12 +77,11 @@ export interface MarkdownComponents {
   Strong: React.FC<StrongProps>;
   Emphasis: React.FC<EmphasisProps>;
   InlineCode: React.FC<InlineCodeProps>;
-  CodeBlock: React.FC<CodeBlockProps>;
+  Code: React.FC<CodeProps>;
   Quote: React.FC<QuoteProps>;
   Link: React.FC<LinkProps>;
   Image: React.FC<ImageProps>;
   List: React.FC<ListProps>;
   ListItem: React.FC<ListItemProps>;
-  HorizontalRule: React.FC<HorizontalRuleProps>;
   ThematicBreak: React.FC<ThematicBreakProps>;
 }

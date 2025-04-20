@@ -3,7 +3,7 @@ import type { HostConfig } from 'react-reconciler';
 import { MarkdownNode, MdText, MdElm, createRoot } from './mdast';
 
 // Type definitions for host context
-type Type = string;
+type Type = 'md-text' | 'md-elm';
 type Props = Record<string, unknown>;
 type Container = {
   root: MdElm;
@@ -71,7 +71,7 @@ export const hostConfig: HostConfig<
         value: props.value || '',
       } as MdText;
     }
-    
+
     if (type === 'md-elm') {
       return {
         type: 'md-elm',
@@ -80,7 +80,7 @@ export const hostConfig: HostConfig<
         children: [],
       } as MdElm;
     }
-    
+
     throw new Error(
       `Unknown element type: ${type}. Only md-text and md-elm primitives are supported.`
     );
@@ -202,7 +202,7 @@ export const hostConfig: HostConfig<
       instance.value = newProps.value || '';
       return;
     }
-    
+
     if (type === 'md-elm' && instance.type === 'md-elm') {
       (instance as MdElm).props = { ...newProps };
       return;
