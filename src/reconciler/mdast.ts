@@ -14,102 +14,35 @@ import type {
   DefinitionContent,
 } from 'mdast';
 
-// Define our markdown node types as a discriminated union
-export type MarkdownNode =
-  | MdRoot
-  | MdHeading
-  | MdParagraph
-  | MdStrong
-  | MdEmphasis
-  | MdText
-  | MdInlineCode
-  | MdCode
-  | MdBlockquote
-  | MdLink
-  | MdImage
-  | MdList
-  | MdListItem
-  | MdThematicBreak;
-
 // Base interface for common properties
 interface MdNodeBase {
   parent?: MarkdownNode;
 }
 
-export interface MdRoot extends MdNodeBase {
-  type: 'md-root';
-  children: MarkdownNode[];
-}
-
-export interface MdHeading extends MdNodeBase {
-  type: 'md-heading';
-  depth: 1 | 2 | 3 | 4 | 5 | 6;
-  children: MarkdownNode[];
-}
-
-export interface MdParagraph extends MdNodeBase {
-  type: 'md-paragraph';
-  children: MarkdownNode[];
-}
-
-export interface MdStrong extends MdNodeBase {
-  type: 'md-strong';
-  children: MarkdownNode[];
-}
-
-export interface MdEmphasis extends MdNodeBase {
-  type: 'md-emphasis';
-  children: MarkdownNode[];
-}
-
+// Simplified markdown node types - just text and elements
 export interface MdText extends MdNodeBase {
   type: 'md-text';
   value: string;
 }
 
-export interface MdInlineCode extends MdNodeBase {
-  type: 'md-inlineCode';
-  value: string;
-}
-
-export interface MdCode extends MdNodeBase {
-  type: 'md-code';
-  lang?: string;
-  value: string;
-}
-
-export interface MdBlockquote extends MdNodeBase {
-  type: 'md-blockquote';
+export interface MdElm extends MdNodeBase {
+  type: 'md-elm';
+  elmType: string;
+  props: Record<string, any>;
   children: MarkdownNode[];
 }
 
-export interface MdLink extends MdNodeBase {
-  type: 'md-link';
-  url: string;
-  title?: string;
-  children: MarkdownNode[];
-}
+// Define our markdown node types as a discriminated union
+export type MarkdownNode = MdText | MdElm;
 
-export interface MdImage extends MdNodeBase {
-  type: 'md-image';
-  url: string;
-  alt?: string;
-  title?: string;
-}
-
-export interface MdList extends MdNodeBase {
-  type: 'md-list';
-  ordered: boolean;
-  children: MarkdownNode[];
-}
-
-export interface MdListItem extends MdNodeBase {
-  type: 'md-listItem';
-  children: MarkdownNode[];
-}
-
-export interface MdThematicBreak extends MdNodeBase {
-  type: 'md-thematicBreak';
+// Helper to create a root node
+export function createRoot(): MdElm {
+  return {
+    type: 'md-elm',
+    elmType: 'root',
+    props: {},
+    children: [],
+  };
 }
 
 /**
@@ -125,7 +58,11 @@ export function createMdast(node: MarkdownNode): Root {
 
   // Flatten nested root nodes - we need to handle Document wrapper components
   function flattenRoots(currentNode: MarkdownNode): MarkdownNode[] {
-    if (currentNode.type !== 'md-root') {
+    if (currentNode.type === 'md-text') {
+      return [currentNode];
+    }
+    
+    if (currentNode.elmType !== 'root') {
       return [currentNode];
     }
 
@@ -133,7 +70,7 @@ export function createMdast(node: MarkdownNode): Root {
     // are also roots, flatten them too
     const result: MarkdownNode[] = [];
     for (const child of currentNode.children) {
-      if (child.type === 'md-root') {
+      if (child.type === 'md-elm' && child.elmType === 'root') {
         result.push(...flattenRoots(child));
       } else {
         result.push(child);
@@ -191,15 +128,14 @@ export function createMdast(node: MarkdownNode): Root {
  * Check if a node is an inline-level element that should be wrapped in a paragraph
  */
 function isInlineNode(node: MarkdownNode): boolean {
+  if (node.type === 'md-text') {
+    return true;
+  }
+  
   // These node types should be considered inline
-  // Note: md-image is not included here since we want images to be individual block elements
-  return [
-    'md-text',
-    'md-strong',
-    'md-emphasis',
-    'md-inlineCode',
-    'md-link',
-  ].includes(node.type);
+  // Note: Image is not included here since we want images to be individual block elements
+  const inlineTypes = ['strong', 'emphasis', 'inlineCode', 'link'];
+  return node.type === 'md-elm' && inlineTypes.includes(node.elmType);
 }
 
 /**
@@ -208,10 +144,25 @@ function isInlineNode(node: MarkdownNode): boolean {
 function createFlowContent(
   node: MarkdownNode
 ): BlockContent | DefinitionContent | null {
-  switch (node.type) {
-    case 'md-root': {
-      // For nested md-root nodes, we process the first child directly
-      // Since this is a result of our component structure (Document component)
+  if (node.type === 'md-text') {
+    // Text nodes are wrapped in paragraphs when they're at the flow level
+    return {
+      type: 'paragraph',
+      children: [{
+        type: 'text',
+        value: node.value || '',
+      }],
+    };
+  }
+  
+  if (node.type !== 'md-elm') {
+    throw new Error(`Unknown node type: ${(node as any).type}`);
+  }
+  
+  // Handle element nodes based on their elmType
+  switch (node.elmType) {
+    case 'root': {
+      // For nested root nodes, we process the first child directly
       if (node.children.length > 0) {
         return createFlowContent(node.children[0]);
       }
@@ -223,18 +174,18 @@ function createFlowContent(
       };
     }
 
-    case 'md-heading': {
-      // Convert md-heading to MDAST heading
+    case 'heading': {
+      // Convert heading to MDAST heading
       const headingNode: Heading = {
         type: 'heading',
-        depth: (node as MdHeading).depth,
+        depth: node.props.depth || 1,
         children: createPhrasingContent(node),
       };
       return headingNode;
     }
 
-    case 'md-paragraph': {
-      // Convert md-paragraph to MDAST paragraph
+    case 'paragraph': {
+      // Convert paragraph to MDAST paragraph
       const paragraphNode: Paragraph = {
         type: 'paragraph',
         children: createPhrasingContent(node),
@@ -242,8 +193,8 @@ function createFlowContent(
       return paragraphNode;
     }
 
-    case 'md-blockquote': {
-      // Convert md-blockquote to MDAST blockquote
+    case 'blockquote': {
+      // Convert blockquote to MDAST blockquote
       return {
         type: 'blockquote',
         children: node.children
@@ -252,41 +203,38 @@ function createFlowContent(
       };
     }
 
-    case 'md-code': {
-      // Convert md-code to MDAST code block
-      const codeNode = node as MdCode;
+    case 'code': {
+      // Convert code to MDAST code block
       const codeBlock: Code = {
         type: 'code',
-        lang: codeNode.lang || null,
-        value: codeNode.value || '',
+        lang: node.props.lang || null,
+        value: node.props.value || '',
       };
       return codeBlock;
     }
 
-    case 'md-list': {
-      // Convert md-list to MDAST list
-      const listNode = node as MdList;
+    case 'list': {
+      // Convert list to MDAST list
       return {
         type: 'list',
-        ordered: listNode.ordered,
+        ordered: !!node.props.ordered,
         spread: false,
-        children: listNode.children
-          .filter((child) => child.type === 'md-listItem')
+        children: node.children
+          .filter(child => child.type === 'md-elm' && child.elmType === 'listItem')
           .map(createListItem)
           .filter(Boolean) as ListItem[],
       };
     }
 
-    case 'md-thematicBreak': {
-      // Convert md-thematicBreak to MDAST thematic break
+    case 'thematicBreak': {
+      // Convert thematicBreak to MDAST thematic break
       return { type: 'thematicBreak' };
     }
 
-    case 'md-text':
-    case 'md-strong':
-    case 'md-emphasis':
-    case 'md-link':
-    case 'md-inlineCode': {
+    case 'strong':
+    case 'emphasis':
+    case 'link':
+    case 'inlineCode': {
       // Inline elements need to be wrapped in a paragraph to be valid flow content
       const content = createPhrasing(node);
       if (content) {
@@ -298,14 +246,13 @@ function createFlowContent(
       return null;
     }
 
-    case 'md-image': {
-      // Convert md-image to MDAST image (wrapped in paragraph)
-      const imageNode = node as MdImage;
+    case 'image': {
+      // Convert image to MDAST image (wrapped in paragraph)
       const mdastImage: Image = {
         type: 'image',
-        url: imageNode.url || '',
-        alt: imageNode.alt || '',
-        title: imageNode.title || null,
+        url: node.props.url || '',
+        alt: node.props.alt || '',
+        title: node.props.title || null,
       };
 
       return {
@@ -315,7 +262,7 @@ function createFlowContent(
     }
 
     default:
-      throw new Error(`Unknown node type: ${node.type}`);
+      throw new Error(`Unknown element type: ${node.elmType}`);
   }
 }
 
@@ -323,7 +270,7 @@ function createFlowContent(
  * Creates a list item node from our component
  */
 function createListItem(node: MarkdownNode): ListItem | null {
-  if (node.type !== 'md-listItem') return null;
+  if (node.type !== 'md-elm' || node.elmType !== 'listItem') return null;
 
   // List items must contain flow content
   const children: (BlockContent | DefinitionContent)[] = [];
@@ -336,22 +283,26 @@ function createListItem(node: MarkdownNode): ListItem | null {
     const child = node.children[i];
 
     if (
-      child.type === 'md-list' ||
-      child.type === 'md-paragraph' ||
-      child.type === 'md-blockquote' ||
-      child.type === 'md-code'
+      (child.type === 'md-elm' && (
+        child.elmType === 'list' ||
+        child.elmType === 'paragraph' ||
+        child.elmType === 'blockquote' ||
+        child.elmType === 'code'
+      ))
     ) {
       // When we hit a block element, if we have collected text nodes, create a paragraph
       if (currentTextGroup.length > 0) {
-        const textNode: MdParagraph = {
-          type: 'md-paragraph',
+        const paragraphNode: MdElm = {
+          type: 'md-elm',
+          elmType: 'paragraph',
+          props: {},
           children: currentTextGroup,
           parent: node,
         };
 
         children.push({
           type: 'paragraph',
-          children: createPhrasingContent(textNode),
+          children: createPhrasingContent(paragraphNode),
         });
 
         currentTextGroup = []; // Reset the group
@@ -371,15 +322,17 @@ function createListItem(node: MarkdownNode): ListItem | null {
   // Process any remaining text nodes at the end
   if (currentTextGroup.length > 0) {
     // Create a temporary node to process the text content
-    const textNode: MdParagraph = {
-      type: 'md-paragraph',
+    const paragraphNode: MdElm = {
+      type: 'md-elm',
+      elmType: 'paragraph',
+      props: {},
       children: currentTextGroup,
       parent: node,
     };
 
     children.push({
       type: 'paragraph',
-      children: createPhrasingContent(textNode),
+      children: createPhrasingContent(paragraphNode),
     });
   }
 
@@ -402,43 +355,44 @@ function createListItem(node: MarkdownNode): ListItem | null {
  * Creates a phrasing content node (inline elements like text, emphasis, strong)
  */
 function createPhrasing(node: MarkdownNode): PhrasingContent | null {
-  switch (node.type) {
-    case 'md-text': {
-      const textNode = node as MdText;
-      return {
-        type: 'text',
-        value: textNode.value || '',
-      };
-    }
-
-    case 'md-strong': {
+  if (node.type === 'md-text') {
+    return {
+      type: 'text',
+      value: node.value || '',
+    };
+  }
+  
+  if (node.type !== 'md-elm') {
+    return null;
+  }
+  
+  switch (node.elmType) {
+    case 'strong': {
       return {
         type: 'strong',
         children: createPhrasingContent(node),
       };
     }
 
-    case 'md-emphasis': {
+    case 'emphasis': {
       return {
         type: 'emphasis',
         children: createPhrasingContent(node),
       };
     }
 
-    case 'md-inlineCode': {
-      const codeNode = node as MdInlineCode;
+    case 'inlineCode': {
       return {
         type: 'inlineCode',
-        value: codeNode.value || '',
+        value: node.props.value || '',
       };
     }
 
-    case 'md-link': {
-      const linkNode = node as MdLink;
+    case 'link': {
       return {
         type: 'link',
-        url: linkNode.url || '',
-        title: linkNode.title || null,
+        url: node.props.url || '',
+        title: node.props.title || null,
         children: createPhrasingContent(node),
       };
     }
@@ -457,7 +411,7 @@ function createPhrasingContent(node: MarkdownNode): PhrasingContent[] {
     return [
       {
         type: 'text',
-        value: (node as MdText).value || '',
+        value: node.value || '',
       },
     ];
   }
@@ -471,11 +425,11 @@ function createPhrasingContent(node: MarkdownNode): PhrasingContent[] {
  */
 function extractTextContent(node: MarkdownNode): string {
   if (node.type === 'md-text') {
-    return (node as MdText).value || '';
+    return node.value || '';
   }
 
-  if (node.type === 'md-inlineCode') {
-    return (node as MdInlineCode).value || '';
+  if (node.type === 'md-elm' && node.elmType === 'inlineCode') {
+    return node.props.value || '';
   }
 
   return node.children.map(extractTextContent).join('');

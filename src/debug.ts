@@ -14,30 +14,29 @@ export function log(...args: any[]): void {
 // Visualize the node tree and return as string
 export function formatTree(node: MarkdownNode, indent = 0): string {
   const prefix = ' '.repeat(indent);
-  let result = `${prefix}${node.type}\n`;
+  let result = '';
   
-  if ('value' in node && node.value) {
+  if (node.type === 'md-text') {
+    result = `${prefix}md-text\n`;
     result += `${prefix}  value: "${node.value}"\n`;
-  }
-  
-  if ('url' in node) {
-    result += `${prefix}  url: "${(node as any).url}"\n`;
-  }
-  
-  if ('depth' in node) {
-    result += `${prefix}  depth: ${(node as any).depth}\n`;
-  }
-  
-  if ('ordered' in node) {
-    result += `${prefix}  ordered: ${(node as any).ordered}\n`;
-  }
-  
-  if (node.children && node.children.length > 0) {
-    result += `${prefix}  children: [\n`;
-    for (const child of node.children) {
-      result += formatTree(child, indent + 4);
+  } else if (node.type === 'md-elm') {
+    result = `${prefix}md-elm (${node.elmType})\n`;
+    
+    // Print props
+    for (const [key, value] of Object.entries(node.props)) {
+      if (key !== 'elmType' && key !== 'children') {
+        result += `${prefix}  ${key}: ${JSON.stringify(value)}\n`;
+      }
     }
-    result += `${prefix}  ]\n`;
+    
+    // Print children
+    if (node.children && node.children.length > 0) {
+      result += `${prefix}  children: [\n`;
+      for (const child of node.children) {
+        result += formatTree(child, indent + 4);
+      }
+      result += `${prefix}  ]\n`;
+    }
   }
   
   return result;

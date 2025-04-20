@@ -21,10 +21,6 @@ export interface EmphasisProps {
   children?: ReactNode;
 }
 
-export interface TextProps {
-  children: string;
-}
-
 export interface InlineCodeProps {
   children: string;
 }
@@ -77,7 +73,6 @@ export interface MarkdownComponents {
   Paragraph: React.FC<ParagraphProps>;
   Strong: React.FC<StrongProps>;
   Emphasis: React.FC<EmphasisProps>;
-  Text: React.FC<TextProps>;
   InlineCode: React.FC<InlineCodeProps>;
   CodeBlock: React.FC<CodeBlockProps>;
   Quote: React.FC<QuoteProps>;

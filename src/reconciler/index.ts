@@ -1,8 +1,8 @@
 import Reconciler from 'react-reconciler';
 import { hostConfig } from './hostConfig';
 import { toMarkdown } from 'mdast-util-to-markdown';
-import { createMdast } from './mdast';
-import { MarkdownNode, MdRoot } from './mdast';
+import { createMdast, createRoot } from './mdast';
+import { MarkdownNode } from './mdast';
 import * as debug from '../debug';
 
 // Create our custom reconciler
@@ -11,10 +11,7 @@ export const reconciler = Reconciler(hostConfig);
 // Create a container for rendering
 export function createContainer() {
   return {
-    root: {
-      type: 'md-root',
-      children: [],
-    } as MdRoot,
+    root: createRoot(),
     nodes: new Map<number, MarkdownNode>(),
   };
 }
