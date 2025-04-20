@@ -1,11 +1,12 @@
 import { ReactNode } from 'react';
+import { HeadingDepth } from '../reconciler/mdast';
 
 export interface DocumentProps {
   children?: ReactNode;
 }
 
 export interface HeaderProps {
-  level: 1 | 2 | 3 | 4 | 5 | 6;
+  level: HeadingDepth;
   children?: ReactNode;
 }
 

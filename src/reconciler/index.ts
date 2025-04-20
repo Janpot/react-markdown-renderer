@@ -3,7 +3,7 @@ import { hostConfig } from './hostConfig';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import { createMdast, createRoot } from './mdast';
 import { MarkdownNode } from './mdast';
-import * as debug from '../debug';
+import * as debug from '../utils/debug';
 
 // Create our custom reconciler
 export const reconciler = Reconciler(hostConfig);

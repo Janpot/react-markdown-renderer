@@ -1,5 +1,5 @@
-import { Node, Root, RootContent } from 'mdast';
-import { MarkdownNode } from './reconciler/mdast';
+import { Root, RootContent } from 'mdast';
+import { MarkdownNode } from '../reconciler/mdast';
 
 // Check if debugging is enabled via environment variable
 export const isDebugEnabled =
@@ -18,26 +18,29 @@ export function formatTree(node: MarkdownNode, indent = 0): string {
   let result = '';
 
   if (node.type === 'md-text') {
-    result = `${prefix}md-text\n`;
-    result += `${prefix}  value: "${node.value}"\n`;
+    result = `${prefix}md-text value: "${node.value}"`;
   } else if (node.type === 'md-elm') {
-    result = `${prefix}md-elm (${node.elmType})\n`;
+    // Display node type and elmType
+    result = `${prefix}${node.elmType}`;
 
     // Print props
-    for (const [key, value] of Object.entries(node.props)) {
-      if (key !== 'elmType' && key !== 'children') {
-        result += `${prefix}  ${key}: ${JSON.stringify(value)}\n`;
-      }
-    }
+    const props = Object.entries(node.props)
+      .filter(([key]) => key !== 'elmType' && key !== 'children')
+      .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+      .join(', ');
 
-    // Print children
-    if (node.children && node.children.length > 0) {
-      result += `${prefix}  children: [\n`;
-      for (const child of node.children) {
-        result += formatTree(child, indent + 4);
-      }
-      result += `${prefix}  ]\n`;
+    if (props) {
+      result += ` ${props}`;
     }
+  }
+
+  // Print children if they exist
+  if (node.type === 'md-elm' && node.children && node.children.length > 0) {
+    result += ` [\n`;
+    for (const child of node.children) {
+      result += formatTree(child, indent + 2) + '\n';
+    }
+    result += `${prefix}]`;
   }
 
   return result;

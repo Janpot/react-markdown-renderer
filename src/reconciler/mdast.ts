@@ -12,6 +12,12 @@ import type {
   DefinitionContent,
 } from 'mdast';
 
+// Import validation utilities
+import * as validate from '../utils/validate';
+
+// Define heading depth type
+export type HeadingDepth = 1 | 2 | 3 | 4 | 5 | 6;
+
 // Base interface for common properties
 interface MdNodeBase {
   parent?: MarkdownNode;
@@ -82,7 +88,6 @@ export function createMdast(node: MarkdownNode): Root {
 
   // Process all the content nodes
   let currentPhrasing: PhrasingContent[] = [];
-  let lastWasBlock = false;
 
   for (const contentNode of contentNodes) {
     // Group adjacent inline nodes into paragraphs
@@ -90,7 +95,6 @@ export function createMdast(node: MarkdownNode): Root {
       const phrasing = createPhrasing(contentNode);
       if (phrasing) {
         currentPhrasing.push(phrasing);
-        lastWasBlock = false;
       }
     } else {
       // If we have any pending inline nodes, create a paragraph for them
@@ -106,7 +110,6 @@ export function createMdast(node: MarkdownNode): Root {
       const content = createFlowContent(contentNode);
       if (content) {
         rootNode.children.push(content);
-        lastWasBlock = true;
       }
     }
   }
@@ -156,7 +159,9 @@ function createFlowContent(
   }
 
   if (node.type !== 'md-elm') {
-    throw new Error(`Unknown node type: ${String(node.type)}`);
+    throw new Error(
+      `Unknown node type: ${String((node as MarkdownNode).type)}`
+    );
   }
 
   // Handle element nodes based on their elmType
@@ -176,9 +181,11 @@ function createFlowContent(
 
     case 'heading': {
       // Convert heading to MDAST heading
+      const depth = validate.headingDepth(node.props.depth, 1);
+
       const headingNode: Heading = {
         type: 'heading',
-        depth: node.props.depth || 1,
+        depth: depth,
         children: createPhrasingContent(node),
       };
       return headingNode;
@@ -207,8 +214,8 @@ function createFlowContent(
       // Convert code to MDAST code block
       const codeBlock: Code = {
         type: 'code',
-        lang: node.props.lang || null,
-        value: node.props.value || '',
+        lang: validate.maybeString(node.props.lang) || null,
+        value: validate.string(node.props.value, ''),
       };
       return codeBlock;
     }
@@ -217,7 +224,7 @@ function createFlowContent(
       // Convert list to MDAST list
       return {
         type: 'list',
-        ordered: !!node.props.ordered,
+        ordered: validate.boolean(node.props.ordered, false),
         spread: false,
         children: node.children
           .filter(
@@ -252,9 +259,9 @@ function createFlowContent(
       // Convert image to MDAST image (wrapped in paragraph)
       const mdastImage: Image = {
         type: 'image',
-        url: node.props.url || '',
-        alt: node.props.alt || '',
-        title: node.props.title || null,
+        url: validate.string(node.props.url, ''),
+        alt: validate.string(node.props.alt, ''),
+        title: validate.maybeString(node.props.title) || null,
       };
 
       return {
@@ -359,7 +366,7 @@ function createPhrasing(node: MarkdownNode): PhrasingContent | null {
   if (node.type === 'md-text') {
     return {
       type: 'text',
-      value: node.value || '',
+      value: validate.string(node.value, ''),
     };
   }
 
@@ -385,15 +392,15 @@ function createPhrasing(node: MarkdownNode): PhrasingContent | null {
     case 'inlineCode': {
       return {
         type: 'inlineCode',
-        value: node.props.value || '',
+        value: validate.string(node.props.value, ''),
       };
     }
 
     case 'link': {
       return {
         type: 'link',
-        url: node.props.url || '',
-        title: node.props.title || null,
+        url: validate.string(node.props.url, ''),
+        title: validate.maybeString(node.props.title) || null,
         children: createPhrasingContent(node),
       };
     }
@@ -412,7 +419,7 @@ function createPhrasingContent(node: MarkdownNode): PhrasingContent[] {
     return [
       {
         type: 'text',
-        value: node.value || '',
+        value: validate.string(node.value, ''),
       },
     ];
   }
