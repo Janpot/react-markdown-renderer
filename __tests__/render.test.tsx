@@ -275,7 +275,7 @@ function Example() {
       }
       \`\`\`
 
-      Image with title:&#x20;
+      Image with title: ![Alt text with 'quotes'](/path/to/image.jpg "Image title with quotes")
       "
     `);
   });

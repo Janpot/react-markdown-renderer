@@ -405,6 +405,15 @@ function createPhrasing(node: MarkdownNode): PhrasingContent | null {
       };
     }
 
+    case 'image': {
+      return {
+        type: 'image',
+        url: validate.string(node.props.url, ''),
+        alt: validate.string(node.props.alt, ''),
+        title: validate.maybeString(node.props.title) || null,
+      };
+    }
+
     default:
       return null;
   }
