@@ -61,15 +61,6 @@ export interface ThematicBreakProps {
   // but needs to exist for consistent typing
 }
 
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'md-elm': any;
-      'md-text': any;
-    }
-  }
-}
-
 export interface MarkdownComponents {
   Document: React.FC<DocumentProps>;
   Header: React.FC<HeaderProps>;

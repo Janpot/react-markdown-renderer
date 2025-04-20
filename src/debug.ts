@@ -1,3 +1,4 @@
+import { Node, Root, RootContent } from 'mdast';
 import { MarkdownNode } from './reconciler/mdast';
 
 // Check if debugging is enabled via environment variable
@@ -5,7 +6,7 @@ export const isDebugEnabled =
   typeof process !== 'undefined' && process.env.DEBUG_MD_RENDERER === 'true';
 
 // Log a message if debugging is enabled
-export function log(...args: any[]): void {
+export function log(...args: unknown[]): void {
   if (isDebugEnabled) {
     console.log(...args);
   }
@@ -43,17 +44,22 @@ export function formatTree(node: MarkdownNode, indent = 0): string {
 }
 
 // Visualize the mdast tree and return as string
-export function formatMdast(node: any, indent = 0): string {
+export function formatMdast(node: Root | RootContent, indent = 0): string {
   const prefix = ' '.repeat(indent);
+
   let result = `${prefix}${node.type}\n`;
 
   for (const key in node) {
-    if (key !== 'type' && key !== 'children' && typeof node[key] !== 'object') {
-      result += `${prefix}  ${key}: ${JSON.stringify(node[key])}\n`;
+    if (
+      key !== 'type' &&
+      key !== 'children' &&
+      typeof (node as any)[key] !== 'object'
+    ) {
+      result += `${prefix}  ${key}: ${JSON.stringify((node as any)[key])}\n`;
     }
   }
 
-  if (node.children && node.children.length > 0) {
+  if ('children' in node && node.children && node.children.length > 0) {
     result += `${prefix}  children: [\n`;
     for (const child of node.children) {
       result += formatMdast(child, indent + 4);

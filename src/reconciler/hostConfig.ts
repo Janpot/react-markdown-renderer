@@ -229,10 +229,13 @@ export const hostConfig: HostConfig<
   },
   beforeActiveInstanceBlur() {},
   afterActiveInstanceBlur() {},
-  prepareScopeUpdate: function (scopeInstance: any, instance: any): void {
+  prepareScopeUpdate: function (
+    scopeInstance: unknown,
+    instance: unknown
+  ): void {
     throw new Error('Function not implemented.');
   },
-  getInstanceFromScope: function (scopeInstance: any): MarkdownNode | null {
+  getInstanceFromScope: function (scopeInstance: unknown): MarkdownNode | null {
     throw new Error('Function not implemented.');
   },
 };

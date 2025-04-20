@@ -26,7 +26,7 @@ export interface MdText extends MdNodeBase {
 export interface MdElm extends MdNodeBase {
   type: 'md-elm';
   elmType: string;
-  props: Record<string, any>;
+  props: Record<string, unknown>;
   children: MarkdownNode[];
 }
 
@@ -156,7 +156,7 @@ function createFlowContent(
   }
 
   if (node.type !== 'md-elm') {
-    throw new Error(`Unknown node type: ${(node as any).type}`);
+    throw new Error(`Unknown node type: ${String(node.type)}`);
   }
 
   // Handle element nodes based on their elmType
@@ -419,19 +419,4 @@ function createPhrasingContent(node: MarkdownNode): PhrasingContent[] {
 
   // Process children to create phrasing content
   return node.children.map(createPhrasing).filter(Boolean) as PhrasingContent[];
-}
-
-/**
- * Extract plain text content from a node and its children
- */
-function extractTextContent(node: MarkdownNode): string {
-  if (node.type === 'md-text') {
-    return node.value || '';
-  }
-
-  if (node.type === 'md-elm' && node.elmType === 'inlineCode') {
-    return node.props.value || '';
-  }
-
-  return node.children.map(extractTextContent).join('');
 }
