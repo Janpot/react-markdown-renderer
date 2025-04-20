@@ -20,7 +20,6 @@ This library uses a set of markdown-specific primitives prefixed with `md-` that
 import React from 'react';
 import {
   render,
-  Document,
   Header,
   Paragraph,
   Strong,
@@ -30,7 +29,7 @@ import {
 } from 'react-markdown-renderer';
 
 const markdown = render(
-  <Document>
+  <>
     <Header level={1}>Hello World</Header>
     <Paragraph>
       This is a <Strong>paragraph</Strong> with a{' '}
@@ -47,7 +46,7 @@ const markdown = render(
         </List>
       </ListItem>
     </List>
-  </Document>
+  </>
 );
 
 console.log(markdown);
