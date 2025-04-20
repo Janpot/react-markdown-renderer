@@ -46,26 +46,33 @@ export function formatTree(node: MarkdownNode, indent = 0): string {
 // Visualize the mdast tree and return as string
 export function formatMdast(node: Root | RootContent, indent = 0): string {
   const prefix = ' '.repeat(indent);
-
-  let result = `${prefix}${node.type}\n`;
-
-  for (const key in node) {
-    if (
-      key !== 'type' &&
-      key !== 'children' &&
-      typeof (node as any)[key] !== 'object'
-    ) {
-      result += `${prefix}  ${key}: ${JSON.stringify((node as any)[key])}\n`;
-    }
+  
+  // Start with the node type
+  let result = `${prefix}${node.type}`;
+  
+  // For text nodes, display the value directly
+  if (node.type === 'text' && 'value' in node) {
+    return `${prefix}text "${node.value}"`;
   }
-
+  
+  // Add all properties except type and children
+  const props = Object.entries(node as Record<string, unknown>)
+    .filter(([key]) => key !== 'type' && key !== 'children' && typeof node[key as keyof typeof node] !== 'object')
+    .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+    .join(', ');
+  
+  if (props) {
+    result += ` ${props}`;
+  }
+  
+  // Add children if they exist
   if ('children' in node && node.children && node.children.length > 0) {
-    result += `${prefix}  children: [\n`;
+    result += ` [\n`;
     for (const child of node.children) {
-      result += formatMdast(child, indent + 4);
+      result += formatMdast(child, indent + 2) + '\n';
     }
-    result += `${prefix}  ]\n`;
+    result += `${prefix}]`;
   }
-
+  
   return result;
 }
