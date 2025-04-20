@@ -1,10 +1,6 @@
 import { ReactNode } from 'react';
 import { HeadingDepth } from '../reconciler/mdast';
 
-export interface DocumentProps {
-  children?: ReactNode;
-}
-
 export interface HeaderProps {
   level: HeadingDepth;
   children?: ReactNode;
@@ -63,7 +59,6 @@ export interface ThematicBreakProps {
 }
 
 export interface MarkdownComponents {
-  Document: React.FC<DocumentProps>;
   Header: React.FC<HeaderProps>;
   Paragraph: React.FC<ParagraphProps>;
   Strong: React.FC<StrongProps>;

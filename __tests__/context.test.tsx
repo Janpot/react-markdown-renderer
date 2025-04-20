@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import React, { createContext, useContext } from 'react';
 import {
   render,
-  Document,
   Paragraph,
   Strong,
   Emphasis,
@@ -54,7 +53,7 @@ const VersionInfo = () => {
 describe('React Context Support', () => {
   it('properly handles context values in components', () => {
     const markdown = render(
-      <Document>
+      <>
         <Header level={1}>API Documentation</Header>
         <VersionInfo />
         <VersionedContent minVersion="1.0.0">
@@ -62,7 +61,7 @@ describe('React Context Support', () => {
             This feature is available in the current version.
           </Paragraph>
         </VersionedContent>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -77,7 +76,7 @@ describe('React Context Support', () => {
 
   it('conditionally renders content based on version context', () => {
     const markdown = render(
-      <Document>
+      <>
         <VersionContext.Provider value="0.9.0">
           <Header level={1}>API Documentation</Header>
           <VersionInfo />
@@ -96,7 +95,7 @@ describe('React Context Support', () => {
             </List>
           </VersionedContent>
         </VersionContext.Provider>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -118,7 +117,7 @@ describe('React Context Support', () => {
 
   it('supports nested context providers', () => {
     const markdown = render(
-      <Document>
+      <>
         <VersionContext.Provider value="1.0.0">
           <Header level={1}>API Documentation</Header>
           <VersionInfo />
@@ -138,7 +137,7 @@ describe('React Context Support', () => {
             </List>
           </VersionContext.Provider>
         </VersionContext.Provider>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`

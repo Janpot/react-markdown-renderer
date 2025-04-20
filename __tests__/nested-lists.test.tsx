@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import React from 'react';
-import { render, Document, Paragraph, List, ListItem, Strong } from '../src';
+import { render, Paragraph, List, ListItem, Strong } from '../src';
 
 describe('Nested Lists Rendering', () => {
   it('renders mixed unordered and ordered nested lists with proper indentation', () => {
     const markdown = render(
-      <Document>
+      <>
         <List>
           <ListItem>
             <Strong>Top level bullet</Strong>
@@ -22,7 +22,7 @@ describe('Nested Lists Rendering', () => {
           </ListItem>
           <ListItem>Another top level bullet</ListItem>
         </List>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -38,7 +38,7 @@ describe('Nested Lists Rendering', () => {
 
   it('handles multi-paragraph list items with nested lists', () => {
     const markdown = render(
-      <Document>
+      <>
         <List>
           <ListItem>
             <Paragraph>First paragraph in list item</Paragraph>
@@ -48,7 +48,7 @@ describe('Nested Lists Rendering', () => {
             </List>
           </ListItem>
         </List>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -62,7 +62,7 @@ describe('Nested Lists Rendering', () => {
 
   it('preserves text content before and after nested lists', () => {
     const markdown = render(
-      <Document>
+      <>
         <List>
           <ListItem>
             Text before the nested list
@@ -72,7 +72,7 @@ describe('Nested Lists Rendering', () => {
             Text after the nested list
           </ListItem>
         </List>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`

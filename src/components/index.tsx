@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  DocumentProps,
   HeaderProps,
   ParagraphProps,
   StrongProps,
@@ -26,9 +25,6 @@ declare module 'react/jsx-runtime' {
 }
 
 // Higher-level component abstractions that use our simplified node structure
-export const Document: React.FC<DocumentProps> = ({ children }) => {
-  return <md-elm elmType="root">{children}</md-elm>;
-};
 
 export const Header: React.FC<HeaderProps> = ({ level, children }) => {
   return (

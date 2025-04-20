@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import React from 'react';
 import {
   render,
-  Document,
   Header,
   Paragraph,
   Strong,
@@ -20,7 +19,7 @@ import {
 describe('Markdown Renderer', () => {
   it('renders a simple document', () => {
     const markdown = render(
-      <Document>
+      <>
         <Header level={1}>Title</Header>
         <Paragraph>
           This is a <Strong>simple</Strong> example of a markdown paragraph with
@@ -33,7 +32,7 @@ describe('Markdown Renderer', () => {
         </List>
         <Code language="javascript">{`console.log('Hello, world!');`}</Code>
         <Image src="https://example.com/image.png" alt="Example Image" />
-      </Document>
+      </>
     );
 
     // Use inline snapshot to capture the exact output
@@ -57,7 +56,7 @@ describe('Markdown Renderer', () => {
 
   it('renders nested content correctly', () => {
     const markdown = render(
-      <Document>
+      <>
         <Header level={2}>Nested Content</Header>
         <List>
           <ListItem>
@@ -67,7 +66,7 @@ describe('Markdown Renderer', () => {
             Item with <Link href="https://example.com">a link</Link>
           </ListItem>
         </List>
-      </Document>
+      </>
     );
 
     // Use inline snapshot to capture the exact output
@@ -82,9 +81,9 @@ describe('Markdown Renderer', () => {
 
   it('handles top-level text nodes', () => {
     const markdown = render(
-      <Document>
+      <>
         This is a top-level text node with <Strong>bold text</Strong>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -95,12 +94,12 @@ describe('Markdown Renderer', () => {
 
   it('renders nested paragraphs correctly', () => {
     const markdown = render(
-      <Document>
+      <>
         <Paragraph>
           <Paragraph>This is a nested paragraph.</Paragraph>
           This is in the outer paragraph.
         </Paragraph>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -111,11 +110,11 @@ describe('Markdown Renderer', () => {
 
   it('handles empty elements', () => {
     const markdown = render(
-      <Document>
+      <>
         <Header level={1}></Header>
         <Paragraph></Paragraph>
         <List></List>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -129,7 +128,7 @@ describe('Markdown Renderer', () => {
 
   it('renders a complex document with mixed formatting', () => {
     const markdown = render(
-      <Document>
+      <>
         <Header level={2}>Mixed Formatting</Header>
         <Paragraph>
           This paragraph has <Strong>bold</Strong>, <Emphasis>italic</Emphasis>,
@@ -144,7 +143,7 @@ describe('Markdown Renderer', () => {
         </Quote>
         <ThematicBreak />
         <Paragraph>Text after a horizontal rule</Paragraph>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -166,7 +165,7 @@ describe('Markdown Renderer', () => {
 
   it('handles ordered lists', () => {
     const markdown = render(
-      <Document>
+      <>
         <List ordered={true}>
           <ListItem>First item</ListItem>
           <ListItem>Second item</ListItem>
@@ -177,7 +176,7 @@ describe('Markdown Renderer', () => {
             </List>
           </ListItem>
         </List>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -191,7 +190,7 @@ describe('Markdown Renderer', () => {
 
   it('handles deeply nested list structures', () => {
     const markdown = render(
-      <Document>
+      <>
         <List>
           <ListItem>
             Top level list item
@@ -214,7 +213,7 @@ describe('Markdown Renderer', () => {
           </ListItem>
           <ListItem>Another top level item</ListItem>
         </List>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`
@@ -232,7 +231,7 @@ describe('Markdown Renderer', () => {
 
   it('handles edge case with mixed components and text formatting', () => {
     const markdown = render(
-      <Document>
+      <>
         <Paragraph>
           Text with <Strong>bold</Strong> and <Emphasis>italic</Emphasis> mixed
           with
@@ -261,7 +260,7 @@ function Example() {
             title="Image title with quotes"
           />
         </Paragraph>
-      </Document>
+      </>
     );
 
     expect(markdown).toMatchInlineSnapshot(`

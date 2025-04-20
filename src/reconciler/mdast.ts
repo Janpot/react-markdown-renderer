@@ -60,7 +60,7 @@ export function createMdast(node: MarkdownNode): Root {
     children: [],
   };
 
-  // Flatten nested root nodes - we need to handle Document wrapper components
+  // Flatten nested root nodes - needed to handle when a root element is directly passed to render
   function flattenRoots(currentNode: MarkdownNode): MarkdownNode[] {
     if (currentNode.type === 'md-text') {
       return [currentNode];
