@@ -14,7 +14,7 @@ pnpm add react-markdown-renderer
 
 ## Usage
 
-The library provides a set of semantic components that map to markdown elements, and a `render` function to convert them to a markdown string:
+This library uses a set of markdown-specific primitives prefixed with `md-` that map directly to markdown elements. It also provides convenience components and a `render` function to convert them to a markdown string:
 
 ```jsx
 import React from 'react';
@@ -67,22 +67,76 @@ This is a **paragraph** with a [link](https://example.com)
   2. Nested item 2
 ```
 
-## Available Components
+## Using Markdown Primitives Directly
 
-- `Document` - The root component for a markdown document
-- `Header` - Heading element (h1-h6) with a `level` prop
-- `Paragraph` - Paragraph element
-- `Strong` - Bold text
-- `Emphasis` - Italic text
-- `Link` - Link with `href` and optional `title` props
-- `Image` - Image with `src`, `alt`, and optional `title` props
-- `List` - Unordered list by default, can be ordered with `ordered={true}`
-- `ListItem` - List item
-- `CodeBlock` - Code block with optional `language` prop
-- `InlineCode` - Inline code
-- `Quote` - Blockquote
-- `HorizontalRule` - Horizontal rule (thematic break)
+You can also use the markdown primitives directly, which map closely to the mdast specification:
+
+```jsx
+import React from 'react';
+import { render } from 'react-markdown-renderer';
+
+const markdown = render(
+  <md-root>
+    <md-heading depth={1}>Direct Primitive Usage</md-heading>
+    <md-paragraph>
+      This uses <md-strong>primitives directly</md-strong> with a{' '}
+      <md-link url="https://example.com" title="Optional title">link</md-link>
+    </md-paragraph>
+    <md-list ordered={false}>
+      <md-listItem>First item</md-listItem>
+      <md-listItem>Second item</md-listItem>
+    </md-list>
+    <md-code lang="javascript" value="console.log('Hello world');"></md-code>
+  </md-root>
+);
+```
+
+## Available Components and Primitives
+
+### Convenience Components
+
+- `Document` - Wraps `<md-root>`
+- `Header` - Wraps `<md-heading depth={1-6}>`
+- `Paragraph` - Wraps `<md-paragraph>`
+- `Strong` - Wraps `<md-strong>`
+- `Emphasis` - Wraps `<md-emphasis>`
+- `Link` - Wraps `<md-link url="..." title="...">`
+- `Image` - Wraps `<md-image url="..." alt="..." title="...">`
+- `List` - Wraps `<md-list ordered={boolean}>`
+- `ListItem` - Wraps `<md-listItem>`
+- `CodeBlock` - Wraps `<md-code lang="...">`
+- `InlineCode` - Wraps `<md-inlineCode>`
+- `Quote` - Wraps `<md-blockquote>`
+- `HorizontalRule` - Wraps `<md-thematicBreak>`
 - `ThematicBreak` - Alias for HorizontalRule
+
+### Markdown Primitives
+
+- `<md-root>` - Root document element
+- `<md-heading depth={1-6}>` - Heading with specified depth
+- `<md-paragraph>` - Paragraph element
+- `<md-strong>` - Strong emphasis (bold)
+- `<md-emphasis>` - Emphasis (italic)
+- `<md-text value="...">` - Text node (usually created automatically)
+- `<md-inlineCode value="...">` - Inline code
+- `<md-code lang="..." value="...">` - Code block with optional language
+- `<md-blockquote>` - Blockquote
+- `<md-link url="..." title="...">` - Link with url and optional title
+- `<md-image url="..." alt="..." title="...">` - Image with url, alt, and optional title
+- `<md-list ordered={boolean}>` - List (ordered or unordered)
+- `<md-listItem>` - List item
+- `<md-thematicBreak>` - Horizontal rule/thematic break
+
+## Architecture
+
+This library uses a discriminated union type system for its internal representation, with each markdown node being a specific type like `MdRoot`, `MdHeading`, etc. These types map directly to the MDAST (Markdown Abstract Syntax Tree) specification used by the unified/remark ecosystem.
+
+Benefits of this approach:
+
+1. Type safety with exhaustive type checking
+2. Clear, direct mapping to markdown structures
+3. Easy to understand and extend
+4. Optimized for performance by eliminating transformation steps
 
 ## License
 

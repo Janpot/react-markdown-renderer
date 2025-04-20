@@ -19,3 +19,22 @@ export {
   HorizontalRule,
   ThematicBreak,
 } from './components';
+
+// Export primitive types
+export type {
+  MarkdownNode,
+  MdRoot, 
+  MdHeading,
+  MdParagraph,
+  MdStrong,
+  MdEmphasis,
+  MdText,
+  MdInlineCode,
+  MdCode,
+  MdBlockquote,
+  MdLink,
+  MdImage,
+  MdList,
+  MdListItem,
+  MdThematicBreak
+} from './reconciler/mdast';
