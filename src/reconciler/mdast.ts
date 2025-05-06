@@ -10,6 +10,9 @@ import type {
   Code,
   BlockContent,
   DefinitionContent,
+  Table,
+  TableRow,
+  TableCell,
 } from 'mdast';
 
 // Import validation utilities
@@ -17,6 +20,9 @@ import * as validate from '../utils/validate';
 
 // Define heading depth type
 export type HeadingDepth = 1 | 2 | 3 | 4 | 5 | 6;
+
+// Define table alignment type to match mdast
+export type TableAlign = 'left' | 'center' | 'right' | null;
 
 // Base interface for common properties
 interface MdNodeBase {
@@ -135,7 +141,7 @@ function isInlineNode(node: MarkdownNode): boolean {
 
   // These node types should be considered inline
   // Note: Image is not included here since we want images to be individual block elements
-  const inlineTypes = ['strong', 'emphasis', 'inlineCode', 'link'];
+  const inlineTypes = ['strong', 'emphasis', 'delete', 'inlineCode', 'link'];
   return node.type === 'md-elm' && inlineTypes.includes(node.elmType);
 }
 
@@ -235,6 +241,47 @@ function createFlowContent(
       };
     }
 
+    case 'table': {
+      // Get table rows
+      const rows = node.children.filter(
+        (child) => child.type === 'md-elm' && child.elmType === 'tableRow'
+      );
+
+      if (rows.length === 0) {
+        return null;
+      }
+
+      // Get the first row to extract header cells and determine alignment
+      const headerRow = rows[0] as MdElm;
+      const headerCells = headerRow.children.filter(
+        (cell) => cell.type === 'md-elm' && cell.elmType === 'tableHeader'
+      ) as MdElm[];
+
+      // Extract alignments from header cells
+      const align: TableAlign[] = headerCells.map((cell) => {
+        const cellAlign = validate.maybeString(cell.props.align);
+        switch (cellAlign) {
+          case 'left':
+          case 'center':
+          case 'right':
+            return cellAlign;
+          default:
+            return null;
+        }
+      });
+
+      // Create table node
+      const tableNode: Table = {
+        type: 'table',
+        align,
+        children: rows
+          .map((row) => createTableRow(row as MdElm))
+          .filter(Boolean) as TableRow[],
+      };
+
+      return tableNode;
+    }
+
     case 'thematicBreak': {
       // Convert thematicBreak to MDAST thematic break
       return { type: 'thematicBreak' };
@@ -242,6 +289,7 @@ function createFlowContent(
 
     case 'strong':
     case 'emphasis':
+    case 'delete':
     case 'link':
     case 'inlineCode': {
       // Inline elements need to be wrapped in a paragraph to be valid flow content
@@ -352,10 +400,48 @@ function createListItem(node: MarkdownNode): ListItem | null {
     });
   }
 
+  // Check if this is a task list item
+  const checked =
+    node.props.checked !== undefined
+      ? validate.boolean(node.props.checked, false)
+      : undefined;
+
   return {
     type: 'listItem',
     spread: false,
+    checked, // Will be undefined for normal list items
     children: children,
+  };
+}
+
+/**
+ * Creates a table row node
+ */
+function createTableRow(node: MdElm): TableRow | null {
+  if (node.elmType !== 'tableRow') return null;
+
+  // Process cells
+  const cells = node.children
+    .filter(
+      (cell) =>
+        cell.type === 'md-elm' &&
+        (cell.elmType === 'tableCell' || cell.elmType === 'tableHeader')
+    )
+    .map((cell) => {
+      const cellNode = cell as MdElm;
+      return {
+        type: 'tableCell',
+        children: createPhrasingContent(cellNode),
+      } as TableCell;
+    });
+
+  if (cells.length === 0) {
+    return null;
+  }
+
+  return {
+    type: 'tableRow',
+    children: cells,
   };
 }
 
@@ -385,6 +471,13 @@ function createPhrasing(node: MarkdownNode): PhrasingContent | null {
     case 'emphasis': {
       return {
         type: 'emphasis',
+        children: createPhrasingContent(node),
+      };
+    }
+
+    case 'delete': {
+      return {
+        type: 'delete',
         children: createPhrasingContent(node),
       };
     }

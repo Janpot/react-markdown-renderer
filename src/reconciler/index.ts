@@ -1,6 +1,7 @@
 import Reconciler from 'react-reconciler';
 import { hostConfig } from './hostConfig';
 import { toMarkdown } from 'mdast-util-to-markdown';
+import { gfmToMarkdown } from 'mdast-util-gfm';
 import { createMdast, createRoot } from './mdast';
 import { MarkdownNode } from './mdast';
 import * as debug from '../utils/debug';
@@ -46,7 +47,7 @@ export function renderToMarkdown(element: React.ReactElement): string {
   debug.log('=== MDAST TREE ===');
   debug.log(debug.formatMdast(mdastRoot));
 
-  // Convert the mdast tree to markdown with proper formatting options
+  // Convert the mdast tree to markdown with proper formatting options for GitHub Flavored Markdown
   let markdown = toMarkdown(mdastRoot, {
     bullet: '-', // Use - for unordered lists
     listItemIndent: 'one', // Use one space for list item indentation
@@ -54,6 +55,11 @@ export function renderToMarkdown(element: React.ReactElement): string {
     fences: true, // Use fences for code blocks
     emphasis: '*', // Use * for emphasis
     strong: '*', // mdast-util-to-markdown only supports * for strong
+    extensions: [
+      gfmToMarkdown({
+        stringLength: (str) => str.length, // Correctly calculate string length for table alignment
+      }),
+    ],
   });
 
   debug.log('=== GENERATED MARKDOWN ===');

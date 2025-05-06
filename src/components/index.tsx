@@ -4,6 +4,7 @@ import {
   ParagraphProps,
   StrongProps,
   EmphasisProps,
+  StrikethroughProps,
   InlineCodeProps,
   CodeProps,
   QuoteProps,
@@ -11,6 +12,10 @@ import {
   ImageProps,
   ListProps,
   ListItemProps,
+  TableProps,
+  TableRowProps,
+  TableCellProps,
+  TableHeaderProps,
   ThematicBreakProps,
 } from './types';
 
@@ -46,6 +51,10 @@ export const Emphasis: React.FC<EmphasisProps> = ({ children }) => {
   return <md-elm elmType="emphasis">{children}</md-elm>;
 };
 
+export const Strikethrough: React.FC<StrikethroughProps> = ({ children }) => {
+  return <md-elm elmType="delete">{children}</md-elm>;
+};
+
 export const InlineCode: React.FC<InlineCodeProps> = ({ children }) => {
   return <md-elm elmType="inlineCode" value={children} />;
 };
@@ -78,8 +87,39 @@ export const List: React.FC<ListProps> = ({ ordered = false, children }) => {
   );
 };
 
-export const ListItem: React.FC<ListItemProps> = ({ children }) => {
-  return <md-elm elmType="listItem">{children}</md-elm>;
+export const ListItem: React.FC<ListItemProps> = ({ checked, children }) => {
+  return (
+    <md-elm elmType="listItem" checked={checked}>
+      {children}
+    </md-elm>
+  );
+};
+
+export const Table: React.FC<TableProps> = ({ children }) => {
+  return <md-elm elmType="table">{children}</md-elm>;
+};
+
+export const TableRow: React.FC<TableRowProps> = ({ children }) => {
+  return <md-elm elmType="tableRow">{children}</md-elm>;
+};
+
+export const TableCell: React.FC<TableCellProps> = ({ align, children }) => {
+  return (
+    <md-elm elmType="tableCell" align={align}>
+      {children}
+    </md-elm>
+  );
+};
+
+export const TableHeader: React.FC<TableHeaderProps> = ({
+  align,
+  children,
+}) => {
+  return (
+    <md-elm elmType="tableHeader" align={align}>
+      {children}
+    </md-elm>
+  );
 };
 
 export const ThematicBreak: React.FC<ThematicBreakProps> = () => {

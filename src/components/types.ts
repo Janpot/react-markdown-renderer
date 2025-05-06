@@ -18,6 +18,10 @@ export interface EmphasisProps {
   children?: ReactNode;
 }
 
+export interface StrikethroughProps {
+  children?: ReactNode;
+}
+
 export interface InlineCodeProps {
   children: string;
 }
@@ -49,6 +53,27 @@ export interface ListProps {
 }
 
 export interface ListItemProps {
+  checked?: boolean;
+  children?: ReactNode;
+}
+
+export type TableCellAlignment = 'left' | 'center' | 'right' | undefined;
+
+export interface TableProps {
+  children: ReactNode;
+}
+
+export interface TableRowProps {
+  children: ReactNode;
+}
+
+export interface TableCellProps {
+  align?: TableCellAlignment;
+  children?: ReactNode;
+}
+
+export interface TableHeaderProps {
+  align?: TableCellAlignment;
   children?: ReactNode;
 }
 
@@ -63,6 +88,7 @@ export interface MarkdownComponents {
   Paragraph: React.FC<ParagraphProps>;
   Strong: React.FC<StrongProps>;
   Emphasis: React.FC<EmphasisProps>;
+  Strikethrough: React.FC<StrikethroughProps>;
   InlineCode: React.FC<InlineCodeProps>;
   Code: React.FC<CodeProps>;
   Quote: React.FC<QuoteProps>;
@@ -70,5 +96,9 @@ export interface MarkdownComponents {
   Image: React.FC<ImageProps>;
   List: React.FC<ListProps>;
   ListItem: React.FC<ListItemProps>;
+  Table: React.FC<TableProps>;
+  TableRow: React.FC<TableRowProps>;
+  TableCell: React.FC<TableCellProps>;
+  TableHeader: React.FC<TableHeaderProps>;
   ThematicBreak: React.FC<ThematicBreakProps>;
 }
