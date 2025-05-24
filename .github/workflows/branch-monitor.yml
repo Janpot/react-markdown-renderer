@@ -4,10 +4,6 @@ on:
   push:
     branches: ['test-monitor']
 
-env:
-  BRANCH_NAME: master
-  ISSUE_NUMBER: 1
-
 concurrency:
   group: branch-monitor-master
   cancel-in-progress: true
@@ -25,8 +21,9 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const branchName = process.env.BRANCH_NAME;
-            const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+            const branchName = github.ref_name;
+            const issueNumber = 1;
+
             const currentJobName = process.env.GITHUB_JOB;
             const COMMENT_MARKER = '<!-- branch-monitor-failure-comment -->';
             const POLL_INTERVAL = 30; // seconds
