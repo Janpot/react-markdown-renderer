@@ -26,7 +26,7 @@ jobs:
           script: |
             const branchName = process.env.GITHUB_REF_NAME;
             const issueNumber = parseInt(process.env.ISSUE_NUMBER);
-            
+
             if (!issueNumber) {
               console.log('ERROR: ISSUE_NUMBER environment variable is not set. Please configure MONITOR_ISSUE_NUMBER in repository variables.');
               process.exit(1);
@@ -150,11 +150,9 @@ jobs:
             const date = new Date(commitDate).toISOString();
 
             const issueTitle = `Status Monitor for the \`${branchName}\` branch`;
-            const issueBody = `${emoji} **${overallStatus.toUpperCase()}**
+            const issueBody = `This issue automatically tracks the CI status of the \`${branchName}\` branch. It monitors all checks and updates whenever new commits are pushed.
 
-            This issue automatically tracks the CI status of the \`${branchName}\` branch. It monitors all checks and updates whenever new commits are pushed.
-
-            **Latest Commit**: [\`${shortSha}\`](${commitUrl}) ${commitMessage.split('\n')[0]}
+            **Latest Commit**: [\`${shortSha}\`](${commitUrl}) ${commitMessage.split('\n')[0]} ${emoji} **${overallStatus}**
 
             ---
             *Last updated: ${new Date().toISOString()}*`;
