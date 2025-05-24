@@ -152,7 +152,7 @@ jobs:
             const issueTitle = `Status Monitor for the \`${branchName}\` branch`;
             const issueBody = `<!-- This issue is automatically updated by the branch-monitor workflow. Do not edit manually as changes will be overwritten. -->
 
-This issue automatically tracks the CI status of the \`${branchName}\` branch. It monitors all checks and updates whenever new commits are pushed.
+            This issue automatically tracks the CI status of the \`${branchName}\` branch. It monitors all checks and updates whenever new commits are pushed.
 
             **Latest Commit**: [\`${shortSha}\`](${commitUrl}) ${commitMessage.split('\n')[0]} ${emoji} **${overallStatus}**
 
