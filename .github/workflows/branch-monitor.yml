@@ -33,7 +33,7 @@ jobs:
             const commitSha = context.sha;
             const commitUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${commitSha}`;
             const commitMessage = context.payload.head_commit.message;
-            const commitAuthor = context.payload.head_commit.author.name;
+            const commitAuthor = context.payload.head_commit.author.username || context.payload.head_commit.author.name;
             const commitDate = context.payload.head_commit.timestamp;
             console.log(JSON.stringify(context, null, 2));
 
