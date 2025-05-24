@@ -2,24 +2,19 @@ name: Branch Monitor
 
 on:
   push:
-    branches: ['**']
-
-# Configure repository variables in Settings > Secrets and variables > Actions > Variables:
-# - MONITOR_BRANCH: Branch to monitor (required)
-# - MONITOR_ISSUE_NUMBER: Issue number to update (required)
+    branches: ['master']
 
 env:
-  BRANCH_NAME: ${{ vars.MONITOR_BRANCH }}
-  ISSUE_NUMBER: ${{ vars.MONITOR_ISSUE_NUMBER }}
+  BRANCH_NAME: master
+  ISSUE_NUMBER: 1
 
 concurrency:
-  group: branch-monitor-${{ vars.MONITOR_BRANCH }}
+  group: branch-monitor-master
   cancel-in-progress: true
 
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    if: github.ref_name == vars.MONITOR_BRANCH
     permissions:
       issues: write
       checks: read
@@ -32,6 +27,7 @@ jobs:
           script: |
             const branchName = process.env.BRANCH_NAME;
             const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+            const currentJobName = process.env.GITHUB_JOB;
             const COMMENT_MARKER = '<!-- branch-monitor-failure-comment -->';
             const POLL_INTERVAL = 30; // seconds
             const MAX_POLLS = 120; // 60 minutes total
@@ -42,17 +38,9 @@ jobs:
             const commitMessage = context.payload.head_commit.message;
             const commitAuthor = context.payload.head_commit.author.name;
             const commitDate = context.payload.head_commit.timestamp;
+            console.log(JSON.stringify(context, null, 2));
 
             console.log(`Monitoring checks for commit ${commitSha} on branch ${branchName}`);
-            console.log(`GITHUB_RUN_ID: ${process.env.GITHUB_RUN_ID}`);
-            console.log(`GITHUB_RUN_NUMBER: ${process.env.GITHUB_RUN_NUMBER}`);
-            console.log(`GITHUB_JOB: ${process.env.GITHUB_JOB}`);
-            console.log(`GITHUB_ACTION: ${process.env.GITHUB_ACTION}`);
-            console.log(`GITHUB_WORKFLOW: ${process.env.GITHUB_WORKFLOW}`);
-            console.log(`GITHUB_REPOSITORY: ${process.env.GITHUB_REPOSITORY}`);
-            console.log(`GITHUB_REF: ${process.env.GITHUB_REF}`);
-            console.log(`GITHUB_REF_NAME: ${process.env.GITHUB_REF_NAME}`);
-            console.log(`GitHub context:`, JSON.stringify(github, null, 2));
 
             // Poll for check completion
             let polls = 0;
@@ -154,13 +142,12 @@ jobs:
             const shortSha = commitSha.substring(0, 7);
             const date = new Date(commitDate).toISOString();
 
-            const issueTitle = `Status Monitor for ${branchName} branch`;
+            const issueTitle = `${emoji} Status Monitor for ${branchName} branch`;
             const issueBody = `${emoji} **${overallStatus.toUpperCase()}**
 
-            **Latest Commit**: [\`${shortSha}\`](${commitUrl})
-            **Message**: ${commitMessage.split('\n')[0]}
-            **Author**: ${commitAuthor}
-            **Date**: ${date}
+            This issue automatically tracks the CI status of the \`${branchName}\` branch. It monitors all checks and updates whenever new commits are pushed.
+
+            **Latest Commit**: [\`${shortSha}\`](${commitUrl}) ${commitMessage.split('\n')[0]}
 
             ---
             *Last updated: ${new Date().toISOString()}*`;
