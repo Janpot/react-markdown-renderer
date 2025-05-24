@@ -48,6 +48,11 @@ jobs:
             console.log(`GITHUB_RUN_NUMBER: ${process.env.GITHUB_RUN_NUMBER}`);
             console.log(`GITHUB_JOB: ${process.env.GITHUB_JOB}`);
             console.log(`GITHUB_ACTION: ${process.env.GITHUB_ACTION}`);
+            console.log(`GITHUB_WORKFLOW: ${process.env.GITHUB_WORKFLOW}`);
+            console.log(`GITHUB_REPOSITORY: ${process.env.GITHUB_REPOSITORY}`);
+            console.log(`GITHUB_REF: ${process.env.GITHUB_REF}`);
+            console.log(`GITHUB_REF_NAME: ${process.env.GITHUB_REF_NAME}`);
+            console.log(`GitHub context:`, JSON.stringify(github, null, 2));
 
             // Poll for check completion
             let polls = 0;
@@ -93,23 +98,29 @@ jobs:
                 console.log(`- ${check.type}: ${check.name}: ${check.state}`);
               });
 
-              if (allChecks.length <= 1) {
-                console.log('Only this monitor check found, continuing to poll...');
+              // Filter out the current workflow run (this monitor job)
+              const currentJobName = process.env.GITHUB_JOB;
+              const otherChecks = allChecks.filter(check => check.name !== currentJobName);
+              
+              console.log(`Filtered out current job '${currentJobName}', ${otherChecks.length} other checks remaining`);
+
+              if (otherChecks.length === 0) {
+                console.log('No other checks found, continuing to poll...');
                 await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL * 1000));
                 continue;
               }
 
-              // Check if all but one are completed (assuming the remaining one is this monitor)
-              const states = allChecks.map(check => check.state);
-              const completedStates = states.filter(s => 
+              // Check if all other checks are completed
+              const otherStates = otherChecks.map(check => check.state);
+              const completedStates = otherStates.filter(s => 
                 s === 'success' || s === 'failure' || s === 'error' || s === 'cancelled' || s === 'timed_out' || s === 'skipped'
               );
-              const allButOneCompleted = completedStates.length >= allChecks.length - 1;
+              const allOtherCompleted = completedStates.length === otherChecks.length;
 
-              console.log(`Completed: ${completedStates.length}/${allChecks.length} checks`);
-              console.log(`All but one completed: ${allButOneCompleted}`);
+              console.log(`Completed: ${completedStates.length}/${otherChecks.length} other checks`);
+              console.log(`All other checks completed: ${allOtherCompleted}`);
 
-              if (allButOneCompleted) {
+              if (allOtherCompleted) {
                 // Determine overall status from completed checks only
                 if (completedStates.every(s => s === 'success' || s === 'skipped')) {
                   overallStatus = 'success';
@@ -118,7 +129,7 @@ jobs:
                 } else {
                   overallStatus = 'success'; // fallback
                 }
-                console.log(`All but one checks completed with overall status: ${overallStatus}`);
+                console.log(`All other checks completed with overall status: ${overallStatus}`);
                 break;
               } else {
                 console.log(`Still waiting for more checks to complete, waiting ${POLL_INTERVAL}s...`);
