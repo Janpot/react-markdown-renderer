@@ -53,7 +53,7 @@ export interface ListProps {
 }
 
 export interface ListItemProps {
-  checked?: boolean;
+  checked?: boolean
   children?: ReactNode
 }
 
