@@ -2,7 +2,7 @@ name: Branch Monitor
 
 on:
   push:
-    branches: ['master']
+    branches: ['test-monitor']
 
 env:
   BRANCH_NAME: master
