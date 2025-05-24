@@ -54,7 +54,7 @@ export interface ListProps {
 
 export interface ListItemProps {
   checked?: boolean;
-  children?: ReactNode;
+  children?: ReactNode
 }
 
 export type TableCellAlignment = 'left' | 'center' | 'right' | undefined;
