@@ -9,7 +9,7 @@ on:
         type: number
 
 concurrency:
-  group: branch-monitor-master
+  group: branch-monitor-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
