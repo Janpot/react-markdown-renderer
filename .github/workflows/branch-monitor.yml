@@ -1,11 +1,12 @@
 name: Branch Monitor
 
 on:
-  push:
-    branches: ['test-monitor']
-
-env:
-  ISSUE_NUMBER: ${{ vars.MONITOR_ISSUE_NUMBER }}
+  workflow_call:
+    inputs:
+      issue_number:
+        description: 'GitHub issue number to update with branch status'
+        required: true
+        type: number
 
 concurrency:
   group: branch-monitor-master
@@ -25,10 +26,15 @@ jobs:
         with:
           script: |
             const branchName = process.env.GITHUB_REF_NAME;
-            const issueNumber = parseInt(process.env.ISSUE_NUMBER);
+            const issueNumber = ${{ inputs.issue_number }};
+
+            if (!branchName) {
+              console.log('ERROR: GITHUB_REF_NAME environment variable is not set. Branch name is required.');
+              process.exit(1);
+            }
 
             if (!issueNumber) {
-              console.log('ERROR: ISSUE_NUMBER environment variable is not set. Please configure MONITOR_ISSUE_NUMBER in repository variables.');
+              console.log('ERROR: issue_number input is required.');
               process.exit(1);
             }
 
