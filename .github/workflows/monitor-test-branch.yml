@@ -1,0 +1,11 @@
+name: Monitor Test Branch
+
+on:
+  push:
+    branches: ['test-monitor']
+
+jobs:
+  monitor:
+    uses: ./.github/workflows/branch-monitor.yml
+    with:
+      issue_number: 1
