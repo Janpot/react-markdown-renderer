@@ -80,7 +80,7 @@ export interface TableHeaderProps {
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ThematicBreakProps {
   // This interface intentionally left empty as ThematicBreak has no props
-  // but needs to exist for consistent typing
+  // but needs to exist for consistent typin
 }
 
 export interface MarkdownComponents {
