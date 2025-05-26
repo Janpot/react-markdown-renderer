@@ -7,5 +7,8 @@ on:
 jobs:
   monitor:
     uses: ./.github/workflows/branch-monitor.yml
+    permissions:
+      issues: write
+      checks: read
     with:
       issue_number: 1
