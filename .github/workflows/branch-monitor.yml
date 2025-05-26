@@ -53,6 +53,8 @@ jobs:
             const commitDate = context.payload.head_commit.timestamp;
             console.log(JSON.stringify(context, null, 2));
 
+            console.log(`GITHUB_WORKFLOW: ${process.env.GITHUB_WORKFLOW}`);
+            console.log(`GITHUB_RUN_ID: ${process.env.GITHUB_RUN_ID}`);
             console.log(`Monitoring checks for commit ${commitSha} on branch ${branchName}`);
 
             // Poll for check completion
