@@ -34,7 +34,7 @@ export function renderToMarkdown(element: React.ReactElement): string {
   );
 
   // Render synchronously
-  reconciler.updateContainer(element, root, null, () => {});
+  reconciler.updateContainer(element, root, null, () => {})
 
   // Debug: Print our internal tree
   debug.log('=== MARKDOWN NODE TREE ===');
