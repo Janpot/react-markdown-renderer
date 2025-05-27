@@ -57,11 +57,40 @@ jobs:
             console.log(`GITHUB_RUN_ID: ${process.env.GITHUB_RUN_ID}`);
             console.log(`Monitoring checks for commit ${commitSha} on branch ${branchName}`);
 
+            // Get required status checks from branch protection
+            let requiredChecks = [];
+            try {
+              const { data: branchProtection } = await github.rest.repos.getBranchProtection({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                branch: branchName
+              });
+              
+              if (branchProtection.required_status_checks) {
+                requiredChecks = branchProtection.required_status_checks.contexts || [];
+                console.log(`Found ${requiredChecks.length} required status checks:`, requiredChecks);
+              } else {
+                console.log('No required status checks configured in branch protection');
+              }
+            } catch (error) {
+              if (error.status === 404) {
+                console.log('No branch protection configured');
+              } else {
+                console.log(`ERROR: Could not fetch branch protection (${error.status}): ${error.message}`);
+                process.exit(1);
+              }
+            }
+
             // Poll for check completion
             let polls = 0;
             let overallStatus = 'pending';
 
-            while (polls < MAX_POLLS) {
+            if (requiredChecks.length === 0) {
+              console.log('No required status checks to monitor - treating as success.');
+              overallStatus = 'success';
+            }
+
+            while (polls < MAX_POLLS && requiredChecks.length > 0) {
               polls++;
               console.log(`Poll ${polls}/${MAX_POLLS} - checking status...`);
 
@@ -101,30 +130,32 @@ jobs:
                 console.log(`- ${check.type}: ${check.name}: ${check.state}`);
               });
 
-              // Filter out the current workflow run (this monitor job)
-              const currentJobName = process.env.GITHUB_JOB;
-              const otherChecks = allChecks.filter(check => check.name !== currentJobName);
+              // Filter to only required checks
+              const requiredCheckResults = allChecks.filter(check => requiredChecks.includes(check.name));
               
-              console.log(`Filtered out current job '${currentJobName}', ${otherChecks.length} other checks remaining`);
+              console.log(`Found ${requiredCheckResults.length}/${requiredChecks.length} required checks`);
+              requiredCheckResults.forEach(check => {
+                console.log(`- Required: ${check.name}: ${check.state}`);
+              });
 
-              if (otherChecks.length === 0) {
-                console.log('No other checks found, continuing to poll...');
+              if (requiredCheckResults.length === 0) {
+                console.log('No required checks found yet, continuing to poll...');
                 await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL * 1000));
                 continue;
               }
 
-              // Check if all other checks are completed
-              const otherStates = otherChecks.map(check => check.state);
-              const completedStates = otherStates.filter(s => 
+              // Check if all required checks are completed
+              const requiredStates = requiredCheckResults.map(check => check.state);
+              const completedStates = requiredStates.filter(s => 
                 s === 'success' || s === 'failure' || s === 'error' || s === 'cancelled' || s === 'timed_out' || s === 'skipped'
               );
-              const allOtherCompleted = completedStates.length === otherChecks.length;
+              const allRequiredCompleted = completedStates.length === requiredChecks.length;
 
-              console.log(`Completed: ${completedStates.length}/${otherChecks.length} other checks`);
-              console.log(`All other checks completed: ${allOtherCompleted}`);
+              console.log(`Completed: ${completedStates.length}/${requiredChecks.length} required checks`);
+              console.log(`All required checks completed: ${allRequiredCompleted}`);
 
-              if (allOtherCompleted) {
-                // Determine overall status from completed checks only
+              if (allRequiredCompleted) {
+                // Determine overall status from completed required checks only
                 if (completedStates.every(s => s === 'success' || s === 'skipped')) {
                   overallStatus = 'success';
                 } else if (completedStates.some(s => s === 'failure' || s === 'timed_out' || s === 'cancelled' || s === 'error')) {
@@ -132,10 +163,10 @@ jobs:
                 } else {
                   overallStatus = 'success'; // fallback
                 }
-                console.log(`All other checks completed with overall status: ${overallStatus}`);
+                console.log(`All required checks completed with overall status: ${overallStatus}`);
                 break;
               } else {
-                console.log(`Still waiting for more checks to complete, waiting ${POLL_INTERVAL}s...`);
+                console.log(`Still waiting for more required checks to complete, waiting ${POLL_INTERVAL}s...`);
                 await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL * 1000));
               }
             }
