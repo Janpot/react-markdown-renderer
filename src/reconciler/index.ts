@@ -21,7 +21,10 @@ export function createContainer() {
 export function renderToMarkdown(element: React.ReactElement): string {
   const container = createContainer();
 
-  // React 18 compatible API
+  const noop = () => {};
+  const onError = (error: Error) => {
+    throw error;
+  };
   const root = reconciler.createContainer(
     container,
     0,
@@ -29,12 +32,15 @@ export function renderToMarkdown(element: React.ReactElement): string {
     false,
     null,
     '',
-    () => {},
-    null
+    onError,
+    onError,
+    onError,
+    noop
   );
 
   // Render synchronously
-  reconciler.updateContainer(element, root, null, () => {})
+  reconciler.updateContainerSync(element, root, null, () => {});
+  reconciler.flushSyncWork();
 
   // Debug: Print our internal tree
   debug.log('=== MARKDOWN NODE TREE ===');
