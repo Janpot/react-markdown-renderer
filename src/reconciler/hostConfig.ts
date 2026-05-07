@@ -15,11 +15,12 @@ type TextInstance = MdText;
 type HydratableInstance = never;
 type PublicInstance = MarkdownNode;
 type HostContext = null;
-type UpdatePayload = Record<string, unknown>;
 type ChildSet = never;
-type TimeoutHandle = NodeJS.Timeout;
+type TimeoutHandle = ReturnType<typeof setTimeout>;
 type NoTimeout = -1;
 type SuspenseInstance = never;
+type FormInstance = never;
+type TransitionStatus = null;
 
 // Define the HostConfig type for our markdown renderer
 // The HostConfig interface from react-reconciler has incompatibilities with our implementation
@@ -32,12 +33,13 @@ export const hostConfig: HostConfig<
   TextInstance,
   SuspenseInstance,
   HydratableInstance,
+  FormInstance,
   PublicInstance,
   HostContext,
-  UpdatePayload,
   ChildSet,
   TimeoutHandle,
-  NoTimeout
+  NoTimeout,
+  TransitionStatus
 > = {
   isPrimaryRenderer: true,
   noTimeout: -1 as const,
@@ -102,18 +104,6 @@ export const hostConfig: HostConfig<
     _hostContext
   ) {
     return false;
-  },
-
-  prepareUpdate(
-    _instance,
-    _type,
-    _oldProps,
-    _newProps,
-    _rootContainer,
-    _hostContext
-  ) {
-    // Return a non-null value to indicate an update is needed
-    return {};
   },
 
   shouldSetTextContent(_type, _props) {
@@ -198,7 +188,7 @@ export const hostConfig: HostConfig<
     // Noop
   },
 
-  commitUpdate(instance, _updatePayload, type, _oldProps, newProps) {
+  commitUpdate(instance, type, _oldProps, newProps) {
     if (type === 'md-text' && instance.type === 'md-text') {
       instance.value = validate.string(newProps.value, '');
       return;
@@ -220,9 +210,45 @@ export const hostConfig: HostConfig<
   scheduleTimeout: setTimeout,
   cancelTimeout: clearTimeout,
   preparePortalMount() {},
-  getCurrentEventPriority() {
+  resetFormInstance() {},
+  getCurrentUpdatePriority() {
     return 0;
   },
+  resolveUpdatePriority() {
+    return 0;
+  },
+  setCurrentUpdatePriority() {},
+  shouldAttemptEagerTransition() {
+    return false;
+  },
+  trackSchedulerEvent() {},
+  resolveEventType() {
+    return null;
+  },
+  resolveEventTimeStamp() {
+    return -1.1;
+  },
+  requestPostPaintCallback() {},
+  maySuspendCommit() {
+    return false;
+  },
+  preloadInstance() {
+    return true;
+  },
+  startSuspendingCommit() {},
+  suspendInstance() {},
+  waitForCommitToBeReady() {
+    return null;
+  },
+  NotPendingTransition: null,
+  HostTransitionContext: {
+    $$typeof: Symbol.for('react.context'),
+    Provider: null,
+    Consumer: null,
+    _currentValue: null,
+    _currentValue2: null,
+    _threadCount: 0,
+  } as never,
   getInstanceFromNode() {
     return null;
   },
